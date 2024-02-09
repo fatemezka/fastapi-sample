@@ -15,17 +15,25 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-
+# Tables
 def create_tables():
     Base.metadata.create_all(bind=engine)
     print(Base.metadata.tables)
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_type = Column(Integer)  # todo foreign key
+    user_type_id = Column(Integer, ForeignKey('user_types.id'))
     username = Column(String(255), unique=True, index=True)
     name = Column(String(255))
     family = Column(String(255))
@@ -34,7 +42,8 @@ class User(Base):
     profile_photo = Column(String(255), default="")  # todo set proper default
     hashed_password = Column(String(255))
 
-    # user_types = relationship("UserType", back_populates="owner")
+    # relations
+    user_type = relationship("UserType", back_populates="user", uselist=False)
 
 
 class UserType(Base):
@@ -43,6 +52,22 @@ class UserType(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(255), index=True)
     description = Column(String(1000), index=True)
-    # user_id = Column(Integer, ForeignKey("users.id"))
+    
+    # relations
+    user = relationship("User", back_populates="user_type")
 
-    # user = relationship("User", back_populates="items")
+
+class Lawyer(Base):
+    __tablename__ = "lawyers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer)
+    resume = Column(String(255), unique=True, index=True)
+
+
+class Client(Base):
+    __tablename__ = "clients"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer)
+
