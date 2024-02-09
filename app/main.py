@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Path, Query
-from .database import create_tables, SessionLocal
-from .routes.user import router as user_router
+from fastapi import FastAPI
+from app.database import create_tables, SessionLocal
+from app.routes.user import router as user_router
 
 app = FastAPI()
 
