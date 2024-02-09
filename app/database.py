@@ -35,13 +35,11 @@ class LawyerPosition(PyEnum):
     LAWYER_EXPERT = "Lawyer_Expert"
     INTERN = "Intern"
 
-
 class EducationDegree(PyEnum):
     BACHELOR = 'Bachelor'
     MASTERS = 'Masters'
     PHD = 'PHD'
     POSTDOCTORAL = 'Postdoctoral'
-
 
 class RequestType(PyEnum):
     STATEMENT = "Statement"
@@ -63,7 +61,7 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    is_lawyer = Column(Boolean, default=False)
+    lawyer_id = Column(Integer, ForeignKey("lawyer.id"), unique=True, nullable=True)
     username = Column(String(255), unique=True)
     name = Column(String(255))
     family = Column(String(255))
@@ -77,25 +75,35 @@ class User(Base):
     hashed_password = Column(String(255))
     profile_photo = Column(String(255), nullable=True)  # todo set proper default
 
+    # relations
+    lawyer = relationship("Lawyer", back_populates="user")
+    requests = relationship("Request", back_populates="user")
+    questions = relationship("Question", back_populates="user")
+
 
 class Lawyer(Base):
     __tablename__ = "lawyer"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer)
+    user_id = Column(Integer, ForeignKey("user.id"), unique=True)
     edu_degree =  Column(Enum(EducationDegree)) 
     study_field = Column(String(255))
     lawyer_license = Column(String(255))
     position = Column(Enum(LawyerPosition))
     experience_years = Column(Integer)
     biography = Column(String(1500))
-    first_specialty_id = Column(Integer)
-    second_specialty_id = Column(Integer)
+    first_specialty_id = Column(Integer, ForeignKey("specialty.id"))
+    second_specialty_id = Column(Integer, ForeignKey("specialty.id"))
     office_phone_number = Column(String(50), nullable=True)
     office_address = Column(String(1000), nullable=True)
 
     # relations
-    specialty = relationship("Specialty", back_populates="lawyer")
+    user = relationship("User", back_populates="lawyer")
+    first_specialty = relationship("Specialty", foreign_keys=[first_specialty_id])
+    second_specialty = relationship("Specialty", foreign_keys=[second_specialty_id])
+    requests = relationship("Request", back_populates="lawyer")
+    questions = relationship("Question", back_populates="lawyer")
+    answers = relationship("Answer", back_populates="lawyer")
 
 
 class Specialty(Base):
@@ -105,23 +113,27 @@ class Specialty(Base):
     title = Column(String(255))
     
     # relations
-    lawyer = relationship("Lawyer", back_populates="specialty")
+    first_specialty_lawyers = relationship("Lawyer", back_populates="first_specialty")
+    second_specialty_lawyers = relationship("Lawyer", back_populates="second_specialty")
 
 
 class Request(Base):
     __tablename__ = "request"
 
     id = Column(Integer, primary_key=True)
-    lawyer_id = Column(Integer, nullable=True) 
+    user_id = Column(Integer, ForeignKey("user.id")) 
+    lawyer_id = Column(Integer, ForeignKey("lawyer.id"), nullable=True) 
     request_type =  Column(Enum(RequestType))
-    request_subject_id = Column(Integer) 
+    request_subject_id = Column(Integer, ForeignKey('request_subject.id')) 
     description = Column(String(1000))
     attachment_1 =  Column(String(1000), nullable=True)
     attachment_2 =  Column(String(1000), nullable=True)
     attachment_3 =  Column(String(1000), nullable=True)
     
     # relations
-    lawyer = relationship("Lawyer", back_populates="request")
+    user = relationship("User", back_populates="requests")
+    lawyer = relationship("Lawyer", back_populates="requests")
+    request_subject = relationship("RequestSubject", back_populates="requests")
 
 
 class RequestSubject(Base):
@@ -131,15 +143,25 @@ class RequestSubject(Base):
     request_type = Column(Enum(RequestType)) 
     title = Column(String(500))
 
+    # relations
+    requests = relationship("Request", back_populates="request_subject")
+
 
 class Question(Base):
     __tablename__ = "question"
 
     id = Column(Integer, primary_key=True)
-    lawyer_id = Column(Integer, nullable=True) 
-    question_category_id =  Column(Integer) 
+    user_id = Column(Integer, ForeignKey("user.id")) 
+    lawyer_id = Column(Integer, ForeignKey("lawyer.id"), nullable=True) 
+    question_category_id =  Column(Integer, ForeignKey('question_category.id')) 
     description = Column(String(1000))
-    is_secret = Column(Boolean, default=False)
+    is_private = Column(Boolean, default=False)
+
+    # relations
+    user = relationship("User", back_populates="questions")
+    lawyer = relationship("Lawyer", back_populates="questions")
+    question_category = relationship("QuestionCategory", back_populates="questions")
+    answers = relationship("Answer", back_populates="question")
 
 
 class QuestionCategory(Base):
@@ -148,14 +170,21 @@ class QuestionCategory(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(500))
 
+    # relations
+    questions = relationship("Question", back_populates="question_category")
+
 
 class Answer(Base):
     __tablename__ = "answer"
 
     id = Column(Integer, primary_key=True)
-    lawyer_id = Column(Integer)            # todo check
-    question_id = Column(Integer) 
+    lawyer_id = Column(Integer, ForeignKey("lawyer.id"))             # todo check
+    question_id = Column(Integer, ForeignKey("question.id"))  
     description = Column(String(1000))
+
+    # relations
+    lawyer = relationship("Lawyer", back_populates="answers")
+    question = relationship("Question", back_populates="answers")
 
 
 class Province(Base):
@@ -164,11 +193,17 @@ class Province(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(500))
 
+    # relations
+    cities = relationship("City", back_populates="province")
+
 
 class City(Base):
     __tablename__ = "city"
 
     id = Column(Integer, primary_key=True)
-    province_id = Column(Integer) 
+    province_id = Column(Integer, ForeignKey('province.id'))
     title = Column(String(500))
+
+    # relations
+    province = relationship("Province", back_populates="cities")
 
