@@ -1,19 +1,11 @@
-from fastapi import APIRouter
-from app.controllers.user import get_user, create_user
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.controllers.user import get_users
 
 router = APIRouter()
 
 
-@router.get("/")
-async def get_user_route():
-    return "User hahahaha...."
-
-
-@router.get("/{user_id}")
-async def get_user_route(user_id: int):
-    return get_user(user_id)
-
-
-@router.post("/")
-async def create_user_route(user_data: dict):
-    return create_user(user_data)
+@router.get("/all")
+async def get_users_route(db: Session = Depends(get_db)):
+    return get_users(db)
