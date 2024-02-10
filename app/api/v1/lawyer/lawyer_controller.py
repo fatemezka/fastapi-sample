@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.database import Lawyer, User
 from sqlalchemy.exc import SQLAlchemyError
 from app.utils.error_handler import ErrorHandler
-from app.controllers.user import UserController
+from app.api.v1.user.user_controller import UserController
 from typing import Optional
 
 

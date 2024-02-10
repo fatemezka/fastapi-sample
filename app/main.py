@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Request
 from app.database import create_tables
 import logging
-from starlette.middleware.base import BaseHTTPMiddleware
 from app.utils.error_handler import CustomException
 from fastapi.responses import JSONResponse
 from app.middleware import CustomMiddleware
-from app.routes.user import router as user_router
-from app.routes.lawyer import router as lawyer_router
-from app.routes.request import router as request_router
+from app.api.v1.user.user_route import router as user_router
+from app.api.v1.lawyer.lawyer_route import router as lawyer_router
+from app.api.v1.request.request_route import router as request_router
 
 
 app = FastAPI()

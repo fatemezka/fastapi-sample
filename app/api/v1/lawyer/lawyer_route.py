@@ -4,8 +4,8 @@ from app.utils.error_handler import ErrorHandler
 from app.utils.token_operator import token_generator
 from app.database import get_db
 from app.schemas import IRegisterLawyer, ILogin
-from app.controllers.lawyer import LawyerController
-from app.controllers.user import UserController
+from app.api.v1.lawyer.lawyer_controller import LawyerController
+from app.api.v1.user.user_controller import UserController
 from app.utils.password_operator import get_password_hash, verify_password, validate_password_pattern
 
 

@@ -3,7 +3,7 @@ from app.schemas import ICreateRequest
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
 from app.database import get_db
-from app.controllers.request import RequestController
+from app.api.v1.request.request_controller import RequestController
 
 
 router = APIRouter()

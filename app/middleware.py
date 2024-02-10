@@ -1,12 +1,9 @@
-import os
-from fastapi import Request, Depends, HTTPException, status
+from fastapi import Request, Depends
 from starlette.middleware.base import BaseHTTPMiddleware
 from jose import JWTError
 from app.utils.token_operator import token_parser
 from sqlalchemy.orm import Session
 from app.database import get_db
-# from app.controllers.user import UserController
-# from app.controllers.lawyer import LawyerController
 
 
 class CustomMiddleware(BaseHTTPMiddleware):
