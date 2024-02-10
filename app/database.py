@@ -98,7 +98,7 @@ class Lawyer(Base):
     user_id = Column(Integer, ForeignKey("user.id"), unique=True)
     edu_degree = Column(Enum(EducationDegree))
     study_field = Column(String(255))
-    lawyer_license = Column(String(255))
+    license_code = Column(String(255), unique=True)
     position = Column(Enum(LawyerPosition))
     experience_years = Column(Integer)
     biography = Column(String(1500))

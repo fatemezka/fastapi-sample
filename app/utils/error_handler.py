@@ -40,7 +40,18 @@ class ErrorHandler:
     @staticmethod
     def internal_server_error(error):
         logging.error(f"An error occurred at {datetime.now()}: {error}")
+        print(error)  # todo remove
         raise CustomException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal Server Error"
+        )
+
+    @staticmethod
+    def database_error(error):
+        logging.error(
+            f"An SQLAlchemy error occurred at {datetime.now()}: {error}")
+        print(error)  # todo remove
+        raise CustomException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Something went wrong in database, so all operations rolled back"
         )

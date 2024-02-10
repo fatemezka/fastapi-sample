@@ -19,9 +19,10 @@ def token_parser(request):
     return user_id
 
 
-def token_generator(user_id, is_lawyer):
+def token_generator(user_id, lawyer_id, is_lawyer):
     to_encode_data = {
         "user_id": user_id,
+        "lawyer_id": lawyer_id,
         "is_lawyer": is_lawyer,
         "created_at": str(datetime.now())
     }

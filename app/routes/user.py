@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Path
-from datetime import datetime, timedelta, timezone
 from jose import jwt
-from app.schemas import IRegisterUser, ILoginUser, IReturnUserInfo
+from app.schemas import IRegisterUser, ILogin
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
 from app.utils.token_operator import token_generator
 from app.database import get_db
 from app.controllers.user import UserController
+from app.controllers.lawyer import LawyerController
 from app.utils.password_operator import get_password_hash, verify_password, validate_password_pattern
 
 
@@ -65,7 +65,6 @@ async def register_user_route(data: IRegisterUser, db: Session = Depends(get_db)
 
     # hash user's password
     if not validate_password_pattern(data.password):
-        # frontend should handle that
         return ErrorHandler.bad_request("Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
     try:
         hashed_password = get_password_hash(data.password)
@@ -86,25 +85,12 @@ async def register_user_route(data: IRegisterUser, db: Session = Depends(get_db)
             city_id=data.city_id or None,
             profile_photo=data.profile_photo or None
         )
-        user = IReturnUserInfo(
-            id=user.id,
-            username=user.username,
-            name=user.name,
-            family=user.family,
-            phone_number=user.phone_number,
-            email=user.email,
-            marital_status=user.marital_status,
-            age=user.age,
-            sex=user.sex,
-            province_id=user.province_id,
-            city_id=user.city_id,
-            profile_photo=user.profile_photo
-        )
 
         db.close()
 
         # generate jwt token
-        user_token = token_generator(user_id=user.id, is_lawyer=False)
+        user_token = token_generator(
+            user_id=user.id, lawyer_id=None, is_lawyer=False)
     except Exception as e:
         ErrorHandler.internal_server_error(e)
 
@@ -115,7 +101,7 @@ async def register_user_route(data: IRegisterUser, db: Session = Depends(get_db)
 
 
 @router.post("/login")
-async def login_user_route(data: ILoginUser, db: Session = Depends(get_db)):
+async def login_user_route(data: ILogin, db: Session = Depends(get_db)):
     user_controller = UserController(db)
     user = user_controller.get_by_phone_number(data.phone_number)
     if not user:
@@ -125,29 +111,25 @@ async def login_user_route(data: ILoginUser, db: Session = Depends(get_db)):
     if not is_valid_password:
         ErrorHandler.bad_request("Password is incorrect")
 
+    db.close()
+
     try:
-        user = IReturnUserInfo(
-            id=user.id,
-            username=user.username,
-            name=user.name,
-            family=user.family,
-            phone_number=user.phone_number,
-            email=user.email,
-            marital_status=user.marital_status,
-            age=user.age,
-            sex=user.sex,
-            province_id=user.province_id,
-            city_id=user.city_id,
-            profile_photo=user.profile_photo
-        )
-        db.close()
+        is_lawyer = False
+        lawyer_id = None
+        lawyer_controller = LawyerController(db)
+        lawyer = lawyer_controller.get_by_user_id(user.id)
+        if lawyer:
+            is_lawyer = True
+            lawyer_id = lawyer.id
 
         # generate jwt token
-        user_token = token_generator(user_id=user.id, is_lawyer=False)
+        token = token_generator(
+            user_id=user.id, lawyer_id=lawyer_id, is_lawyer=is_lawyer)
     except Exception as e:
         ErrorHandler.internal_server_error(e)
 
     return {
         "user": user,
-        "user_token": user_token
+        "lawyer": lawyer,
+        "token": token
     }

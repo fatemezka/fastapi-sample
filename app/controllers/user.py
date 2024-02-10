@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
+from app.utils.error_handler import ErrorHandler
 from app.database import User
 from typing import Optional
 
@@ -58,14 +60,14 @@ class UserController:
         self.db.refresh(new_user)
         return new_user
 
-    def update(self, user_id: int, username: str):
-        user = self.db.query(User).filter(User.id == user_id).first()
-        user.username = username
-        self.db.commit()
-        self.db.refresh(user)
-        return user
+    # def update(self, user_id: int, username: str):
+    #     user = self.db.query(User).filter(User.id == user_id).first()
+    #     user.username = username
+    #     self.db.commit()
+    #     self.db.refresh(user)
+    #     return user
 
-    def delete(self, user_id: int):
-        user = self.db.query(User).filter(User.id == user_id).first()
-        self.db.delete(user)
-        self.db.commit()
+    # def delete(self, user_id: int):
+    #     user = self.db.query(User).filter(User.id == user_id).first()
+    #     self.db.delete(user)
+    #     self.db.commit()
