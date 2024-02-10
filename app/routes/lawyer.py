@@ -13,8 +13,8 @@ async def get_lawyers_route(db: Session = Depends(get_db)):
         lawyer_controller = LawyerController(db)
         lawyers = lawyer_controller.get_all()
         db.close()
-    except:
-        ErrorHandler.internal_server_error()
+    except Exception as e:
+        ErrorHandler.internal_server_error(e)
 
     return lawyers
 
@@ -27,8 +27,8 @@ async def get_lawyer_by_id_route(
         lawyer_controller = LawyerController(db)
         lawyer = lawyer_controller.get_by_id(id)
         db.close()
-    except:
-        ErrorHandler.internal_server_error()
+    except Exception as e:
+        ErrorHandler.internal_server_error(e)
 
     if not lawyer:
         ErrorHandler.not_found("Lawyer")

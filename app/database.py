@@ -80,7 +80,7 @@ class User(Base):
     province_id = Column(Integer, ForeignKey("province.id"), nullable=True)
     city_id = Column(Integer, ForeignKey("city.id"), nullable=True)
     hashed_password = Column(String(255))
-    # todo set proper default
+    # TODO set proper default
     profile_photo = Column(String(255), nullable=True)
 
     # relations
@@ -190,7 +190,7 @@ class Answer(Base):
 
     id = Column(Integer, primary_key=True)
     lawyer_id = Column(Integer, ForeignKey(
-        "lawyer.id"))             # todo check
+        "lawyer.id"))             # TODO check
     question_id = Column(Integer, ForeignKey("question.id"))
     description = Column(String(1000))
 

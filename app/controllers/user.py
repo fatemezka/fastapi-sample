@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, User
+from app.database import User
+from typing import Optional
 
 
 class UserController:
@@ -9,15 +10,53 @@ class UserController:
     def get_all(self):
         return self.db.query(User).all()
 
-    def create(self, username: str, email: str):
-        new_user = User(username=username, email=email)
+    def get_by_id(self, user_id: int):
+        return self.db.query(User).filter(User.id == user_id).first()
+
+    def get_by_phone_number(self, phone_number: str):
+        return self.db.query(User).filter(User.phone_number == phone_number).first()
+
+    def get_by_username(self, username: str):
+        return self.db.query(User).filter(User.username == username).first()
+
+    def get_by_email(self, email: str):
+        return self.db.query(User).filter(User.email == email).first()
+
+    def create(
+        self,
+        is_lawyer: bool,
+        username: str,
+        name: str,
+        family: str,
+        phone_number: str,
+        hashed_password: str,
+        email: Optional[str] = None,
+        marital_status: Optional[str] = None,
+        age: Optional[int] = None,
+        sex: Optional[str] = None,
+        province_id: Optional[int] = None,
+        city_id: Optional[int] = None,
+        profile_photo: Optional[str] = None
+    ):
+        new_user = User(
+            is_lawyer=is_lawyer,
+            username=username,
+            name=name,
+            family=family,
+            phone_number=phone_number,
+            email=email,
+            marital_status=marital_status,
+            age=age,
+            sex=sex,
+            province_id=province_id,
+            city_id=city_id,
+            hashed_password=hashed_password,
+            profile_photo=profile_photo
+        )
         self.db.add(new_user)
         self.db.commit()
         self.db.refresh(new_user)
         return new_user
-
-    def get_by_id(self, user_id: int):
-        return self.db.query(User).filter(User.id == user_id).first()
 
     def update(self, user_id: int, username: str):
         user = self.db.query(User).filter(User.id == user_id).first()
@@ -30,28 +69,3 @@ class UserController:
         user = self.db.query(User).filter(User.id == user_id).first()
         self.db.delete(user)
         self.db.commit()
-
-
-# # Example of usage
-# if __name__ == "__main__":
-#     # Create a session
-#     db = SessionLocal()
-
-#     # Create a new user
-#     new_user = create_user(db, username="john_doe", email="john@example.com")
-#     print("Created User:", new_user)
-
-#     # Retrieve all users
-#     users = get_users(db)
-#     print("All Users:", users)
-
-#     # Update a user
-#     updated_user = update_user(db, user_id=new_user.id, username="jane_doe")
-#     print("Updated User:", updated_user)
-
-#     # Delete a user
-#     delete_user(db, user_id=new_user.id)
-#     print("User Deleted")
-
-#     # Close the session
-#     db.close()

@@ -15,16 +15,14 @@ class CustomException(Exception):
 
 class ErrorHandler:
     @staticmethod
-    def not_found(item: str, error):
-        logging.error(f"An error occurred at {datetime.now()}: {error}")
+    def not_found(item: str):
         raise CustomException(
             status_code=status.HTTP_404_NOT_FOUND,
             message=f"{item} Not Found"
         )
 
     @staticmethod
-    def unauthorized(error):
-        logging.error(f"An error occurred at {datetime.now()}: {error}")
+    def unauthorized():
         header_name = os.getenv("AUTH_HEADER_NAME")
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -32,8 +30,7 @@ class ErrorHandler:
         )
 
     @staticmethod
-    def bad_request(custom_message, error):
-        logging.error(f"An error occurred at {datetime.now()}: {error}")
+    def bad_request(custom_message):
         header_name = os.getenv("AUTH_HEADER_NAME")
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,

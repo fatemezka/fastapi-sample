@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 
 def token_parser(request):
     SECRET_KEY = os.getenv("SECRET_KEY")
-    ALGORITHM = "HS256"
+    ALGORITHM = os.getenv("ALGORITHM")
     token = request.headers[os.getenv("AUTH_HEADER_NAME")].split()[1]
 
     try:
