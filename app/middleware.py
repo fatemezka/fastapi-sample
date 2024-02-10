@@ -27,7 +27,6 @@ class CustomMiddleware(BaseHTTPMiddleware):
         #     if not user:
         #         raise self.credentials_exception
         # except:
-        #     print("Request handler error--------------------------")
         #     raise self.credentials_exception
         print("User Authentication middleware applied")
 
