@@ -27,7 +27,10 @@ async def startup_db():
 async def custom_exception_handler(request: Request, exc: CustomException):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"message": exc.detail}
+        content={
+            "status_code": exc.status_code,
+            "message": exc.detail
+        }
     )
 
 

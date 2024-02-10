@@ -7,10 +7,7 @@ import logging
 class CustomException(Exception):
     def __init__(self, status_code: int, message: str):
         self.status_code = status_code
-        self.detail = {
-            "status_code": status_code,
-            "error_message": message
-        }
+        self.detail = message
 
 
 class ErrorHandler:
