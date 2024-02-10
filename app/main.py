@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.middleware import CustomMiddleware
 from app.routes.user import router as user_router
 from app.routes.lawyer import router as lawyer_router
+from app.routes.request import router as request_router
 
 
 app = FastAPI()
@@ -39,5 +40,6 @@ app.add_middleware(CustomMiddleware)
 
 
 # routes
-app.include_router(user_router, prefix="/user", tags=["user"])
-app.include_router(lawyer_router, prefix="/lawyer", tags=["lawyer"])
+app.include_router(user_router, prefix="/user", tags=["User"])
+app.include_router(lawyer_router, prefix="/lawyer", tags=["Lawyer"])
+app.include_router(request_router, prefix="/request", tags=["Request"])
