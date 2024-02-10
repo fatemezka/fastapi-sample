@@ -27,6 +27,13 @@ class ErrorHandler:
         )
 
     @staticmethod
+    def access_denied(item: str):
+        raise CustomException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            message=f"You do not have access to this {item}"
+        )
+
+    @staticmethod
     def bad_request(custom_message):
         header_name = os.getenv("AUTH_HEADER_NAME")
         raise CustomException(

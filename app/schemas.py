@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.database import MaritalStatus, Sex, LawyerPosition, EducationDegree
+from app.database import MaritalStatus, Sex, LawyerPosition, EducationDegree, RequestType
 
 
 # User
@@ -61,3 +61,15 @@ class IRegisterLawyer(BaseModel):
 class ILogin(BaseModel):
     phone_number: str
     password: str
+
+
+# Request
+class ICreateRequest(BaseModel):
+    user_id: str
+    request_type: RequestType
+    request_subject_id: int
+    description: str
+    lawyer_id: Optional[int] = None
+    attachment_1: Optional[str] = None
+    attachment_2: Optional[str] = None
+    attachment_3: Optional[str] = None
