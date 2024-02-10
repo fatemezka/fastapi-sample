@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from app.database import create_tables
+import logging
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.utils.error_handler import CustomException
 from fastapi.responses import JSONResponse
@@ -9,6 +10,9 @@ from app.routes.lawyer import router as lawyer_router
 
 
 app = FastAPI()
+
+# logging
+logging.basicConfig(filename='errors.log', level=logging.ERROR)
 
 
 # create tables on startup

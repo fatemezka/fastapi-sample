@@ -1,5 +1,7 @@
 import os
+from datetime import datetime
 from fastapi import status
+import logging
 
 
 class CustomException(Exception):
@@ -13,14 +15,16 @@ class CustomException(Exception):
 
 class ErrorHandler:
     @staticmethod
-    def not_found(item: str):
+    def not_found(item: str, error):
+        logging.error(f"An error occurred at {datetime.now()}: {error}")
         raise CustomException(
             status_code=status.HTTP_404_NOT_FOUND,
             message=f"{item} Not Found"
         )
 
     @staticmethod
-    def unauthorized():
+    def unauthorized(error):
+        logging.error(f"An error occurred at {datetime.now()}: {error}")
         header_name = os.getenv("AUTH_HEADER_NAME")
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -28,7 +32,17 @@ class ErrorHandler:
         )
 
     @staticmethod
-    def internal_server_error():
+    def bad_request(custom_message, error):
+        logging.error(f"An error occurred at {datetime.now()}: {error}")
+        header_name = os.getenv("AUTH_HEADER_NAME")
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message=custom_message
+        )
+
+    @staticmethod
+    def internal_server_error(error):
+        logging.error(f"An error occurred at {datetime.now()}: {error}")
         raise CustomException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal Server Error"

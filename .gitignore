@@ -5,3 +5,6 @@ sample.txt
 .DS_Store
 .env
 
+errors.log
+
+
