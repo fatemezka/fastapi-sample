@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from app.database import create_tables, SessionLocal
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.middleware import request_handler
+from app.middleware import CustomMiddleware
 from app.routes.user import router as user_router
 
 
@@ -14,7 +14,8 @@ async def startup_db():
     create_tables()
 
 # middleware
-app.add_middleware(BaseHTTPMiddleware, dispatch=request_handler)
+app.add_middleware(CustomMiddleware)
+# app.add_middleware(BaseHTTPMiddleware, dispatch=request_handler)
 
 # routes
 app.include_router(user_router, prefix="/user", tags=["user"])
