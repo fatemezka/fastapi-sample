@@ -40,7 +40,7 @@ async def get_lawyer_by_id_route(
     return lawyer
 
 
-@router.post("/register")
+@router.post("/register")  # TODO fix session error
 async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get_db)):
     lawyer_controller = LawyerController(db)
     user_controller = UserController(db)
@@ -70,6 +70,7 @@ async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get
     # hash user's password
     if not validate_password_pattern(data.password):
         return ErrorHandler.bad_request("Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
+
     try:
         hashed_password = get_password_hash(data.password)
 
@@ -98,7 +99,6 @@ async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get
         )
         db.close()
 
-        print("Result:", result)
         # generate jwt token
         user = result["user"]
         lawyer = result["lawyer"]

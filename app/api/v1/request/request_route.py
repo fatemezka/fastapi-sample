@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Request
 from app.schemas import ICreateRequest
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
@@ -51,10 +51,12 @@ async def get_request_by_id_route(
 
 
 @router.post("/")
-async def create_request_route(data: ICreateRequest, db: Session = Depends(get_db)):
+async def create_request_route(
+        request: Request,
+        data: ICreateRequest,
+        db: Session = Depends(get_db)):
     try:
-        # user_id = request.user.id  # TODO middleware
-        user_id = 1  # TODO remove
+        user_id = request.user_id
         request_controller = RequestController(db)
 
         request = request_controller.create(
@@ -77,11 +79,11 @@ async def create_request_route(data: ICreateRequest, db: Session = Depends(get_d
 
 @router.delete("/{id}")
 async def create_request_by_id_route(
+        request: Request,
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of request to delete")):
 
-    # user_id = request.user.id  # TODO middleware
-    user_id = 1  # TODO remove
+    user_id = request.user_id
     request_controller = RequestController(db)
 
     # check user_id

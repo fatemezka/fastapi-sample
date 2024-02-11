@@ -12,18 +12,18 @@ from app.api.v1.question.question_route import router as question_router
 
 app = FastAPI()
 
-# logging
+# Logging
 logging.basicConfig(filename='errors.log', level=logging.ERROR)
 
 
-# create tables on startup
+# Create all tables
 @app.on_event("startup")
 async def startup_db():
     # initial database (on startup)
     create_tables()
 
 
-# custom error handler
+# Error handler
 @app.exception_handler(CustomException)
 async def custom_exception_handler(request: Request, exc: CustomException):
     return JSONResponse(
@@ -35,11 +35,11 @@ async def custom_exception_handler(request: Request, exc: CustomException):
     )
 
 
-# middleware
+# Middleware
 app.add_middleware(CustomMiddleware)
 
 
-# routes
+# Routes
 app.include_router(user_router, prefix="/user", tags=["User"])
 app.include_router(lawyer_router, prefix="/lawyer", tags=["Lawyer"])
 app.include_router(request_router, prefix="/request", tags=["Request"])

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Request
 from app.schemas import ICreateQuestion, ICreateAnswer
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
@@ -66,10 +66,12 @@ async def get_question_by_id_route(
 
 
 @router.post("/")
-async def create_question_route(data: ICreateQuestion, db: Session = Depends(get_db)):
+async def create_question_route(
+        request: Request,
+        data: ICreateQuestion,
+        db: Session = Depends(get_db)):
     try:
-        # user_id = question.user.id  # TODO middleware
-        user_id = 1  # TODO remove
+        user_id = request.user_id
         question_controller = QuestionController(db)
 
         question = question_controller.create(
@@ -89,12 +91,12 @@ async def create_question_route(data: ICreateQuestion, db: Session = Depends(get
 
 @router.post("/{id}/answer")
 async def create_answer_route(
+        request: Request,
         data: ICreateAnswer,
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of question to create an answer for it")):
     try:
-        # lawyer_id = question.lawyer.id  # TODO middleware
-        lawyer_id = 1  # TODO remove
+        lawyer_id = request.lawyer_id
         question_controller = QuestionController(db)
 
         answer = question_controller.create_answer(
@@ -111,12 +113,12 @@ async def create_answer_route(
 
 
 @router.delete("/{id}")
-async def create_question_by_id_route(
+async def delete_question_by_id_route(
+        request: Request,
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of question to delete")):
 
-    # user_id = question.user.id  # TODO middleware
-    user_id = 1  # TODO remove
+    user_id = request.user_id
     question_controller = QuestionController(db)
 
     # check user_id
