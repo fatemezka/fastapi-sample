@@ -73,11 +73,16 @@ class ICreateRequest(BaseModel):
     attachment_2: Optional[str] = None
     attachment_3: Optional[str] = None
 
+
 # Question
-
-
 class ICreateQuestion(BaseModel):
     question_category_id: int
     description: str
     is_private: bool
     lawyer_id: Optional[int] = None
+
+
+# Answer
+class ICreateAnswer(BaseModel):
+    lawyer_id: int
+    description: str

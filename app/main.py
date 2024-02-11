@@ -7,6 +7,7 @@ from app.middleware import CustomMiddleware
 from app.api.v1.user.user_route import router as user_router
 from app.api.v1.lawyer.lawyer_route import router as lawyer_router
 from app.api.v1.request.request_route import router as request_router
+from app.api.v1.question.question_route import router as question_router
 
 
 app = FastAPI()
@@ -42,3 +43,4 @@ app.add_middleware(CustomMiddleware)
 app.include_router(user_router, prefix="/user", tags=["User"])
 app.include_router(lawyer_router, prefix="/lawyer", tags=["Lawyer"])
 app.include_router(request_router, prefix="/request", tags=["Request"])
+app.include_router(question_router, prefix="/question", tags=["Question"])

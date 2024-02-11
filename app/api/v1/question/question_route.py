@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path
-from app.schemas import ICreateQuestion
+from app.schemas import ICreateQuestion, ICreateAnswer
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
 from app.database import get_db
@@ -31,6 +31,21 @@ async def get_question_categories_route(db: Session = Depends(get_db)):
         ErrorHandler.internal_server_error(e)
 
     return question_categories
+
+
+@router.get("/{id}/answer/all")
+async def get_question_answers_route(
+        db: Session = Depends(get_db),
+        id: int = Path(description="This is ID of question to return its answers")):
+    try:
+        question_controller = QuestionController(db)
+        question_answers = question_controller.get_question_all_answers(
+            question_id=id)
+        db.close()
+    except Exception as e:
+        ErrorHandler.internal_server_error(e)
+
+    return question_answers
 
 
 @router.get("/{id}")
@@ -70,6 +85,29 @@ async def create_question_route(data: ICreateQuestion, db: Session = Depends(get
         ErrorHandler.internal_server_error(e)
 
     return question
+
+
+@router.post("/{id}/answer")
+async def create_answer_route(
+        data: ICreateAnswer,
+        db: Session = Depends(get_db),
+        id: int = Path(description="This is ID of question to create an answer for it")):
+    try:
+        # lawyer_id = question.lawyer.id  # TODO middleware
+        lawyer_id = 1  # TODO remove
+        question_controller = QuestionController(db)
+
+        answer = question_controller.create_answer(
+            lawyer_id=lawyer_id,
+            question_id=id,
+            description=data.description
+        )
+
+        db.close()
+    except Exception as e:
+        ErrorHandler.internal_server_error(e)
+
+    return answer
 
 
 @router.delete("/{id}")

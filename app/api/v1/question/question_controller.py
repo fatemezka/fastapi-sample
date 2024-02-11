@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.utils.error_handler import ErrorHandler
-from app.database import Question, QuestionCategory
+from app.database import Question, QuestionCategory, Answer
 from typing import Optional
 
 
@@ -10,10 +10,14 @@ class QuestionController:
         self.db = db
 
     def get_all(self):
-        return self.db.query(Question).all()
+        return self.db.query(Question).all()  # TODO filter
 
     def get_all_categories(self):
         return self.db.query(QuestionCategory).all()
+
+    def get_question_all_answers(self, question_id: int):
+        # TODO filter
+        return self.db.query(Answer).filter(Answer.question_id == question_id).all()
 
     def get_by_id(self, id: int):
         return self.db.query(Question).filter(Question.id == id).first()
@@ -37,6 +41,22 @@ class QuestionController:
         self.db.commit()
         self.db.refresh(new_question)
         return new_question
+
+    def create_answer(
+            self,
+            lawyer_id: int,
+            question_id: int,
+            description: str
+    ):
+        new_answer = Answer(
+            lawyer_id=lawyer_id,
+            question_id=question_id,
+            description=description
+        )
+        self.db.add(new_answer)
+        self.db.commit()
+        self.db.refresh(new_answer)
+        return new_answer
 
     def delete(self, id: int):
         question = self.db.query(Question).filter(Question.id == id).first()
