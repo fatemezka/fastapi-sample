@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from fastapi import status
+from fastapi import status, HTTPException
 import logging
 
 
-class CustomException(Exception):
+class CustomException(HTTPException):
     def __init__(self, status_code: int, message: str):
         self.status_code = status_code
         self.detail = message
@@ -19,11 +19,19 @@ class ErrorHandler:
         )
 
     @staticmethod
-    def unauthorized():
+    def user_unauthorized():
         header_name = os.getenv("AUTH_HEADER_NAME")
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            message=f"Could Not Validate Credentials ({header_name} Header)"
+            message=f"Could not validate user credentials ({header_name} header)"
+        )
+
+    @staticmethod
+    def lawyer_unauthorized():
+        header_name = os.getenv("AUTH_HEADER_NAME")
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message=f"Could not validate lawyer credentials ({header_name} Header)"
         )
 
     @staticmethod
