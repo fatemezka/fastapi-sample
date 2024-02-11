@@ -32,6 +32,8 @@ then you project will run on port 8000 on localhost, so you can see the APIs doc
 1. http://localhost:8000/docs
 2. http://localhost:8000/redoc
 
+You can see error logs in *errors.log* file, which will create as you face an error.
+
 
 ## Endpoints
 
