@@ -59,15 +59,3 @@ class UserController:
         self.db.commit()
         self.db.refresh(new_user)
         return new_user
-
-    # def update(self, user_id: int, username: str):
-    #     user = self.db.query(User).filter(User.id == user_id).first()
-    #     user.username = username
-    #     self.db.commit()
-    #     self.db.refresh(user)
-    #     return user
-
-    # def delete(self, user_id: int):
-    #     user = self.db.query(User).filter(User.id == user_id).first()
-    #     self.db.delete(user)
-    #     self.db.commit()
