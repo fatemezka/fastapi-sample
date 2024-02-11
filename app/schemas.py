@@ -65,7 +65,6 @@ class ILogin(BaseModel):
 
 # Request
 class ICreateRequest(BaseModel):
-    user_id: str
     request_type: RequestType
     request_subject_id: int
     description: str
@@ -73,3 +72,12 @@ class ICreateRequest(BaseModel):
     attachment_1: Optional[str] = None
     attachment_2: Optional[str] = None
     attachment_3: Optional[str] = None
+
+# Question
+
+
+class ICreateQuestion(BaseModel):
+    question_category_id: int
+    description: str
+    is_private: bool
+    lawyer_id: Optional[int] = None

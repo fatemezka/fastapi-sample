@@ -51,7 +51,7 @@ async def get_request_by_id_route(
 
 
 @router.post("/")
-async def register_user_route(data: ICreateRequest, db: Session = Depends(get_db)):
+async def create_request_route(data: ICreateRequest, db: Session = Depends(get_db)):
     try:
         # user_id = request.user.id  # TODO middleware
         user_id = 1  # TODO remove
@@ -76,7 +76,7 @@ async def register_user_route(data: ICreateRequest, db: Session = Depends(get_db
 
 
 @router.delete("/{id}")
-async def register_user_route(
+async def create_request_by_id_route(
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of request to delete")):
 
