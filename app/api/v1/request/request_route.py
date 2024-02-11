@@ -39,15 +39,15 @@ async def get_request_by_id_route(
         id: int = Path(description="This is ID of request to return")):
     try:
         request_controller = RequestController(db)
-        request = request_controller.get_by_id(id)
+        request_ = request_controller.get_by_id(id)
         db.close()
     except Exception as e:
         ErrorHandler.internal_server_error(e)
 
-    if not request:
+    if not request_:
         ErrorHandler.not_found("Request")
 
-    return request
+    return request_
 
 
 @router.post("/")
@@ -59,7 +59,7 @@ async def create_request_route(
         user_id = request.user_id
         request_controller = RequestController(db)
 
-        request = request_controller.create(
+        request_ = request_controller.create(
             user_id=user_id,
             request_type=data.request_type,
             request_subject_id=data.request_subject_id,
@@ -74,7 +74,7 @@ async def create_request_route(
     except Exception as e:
         ErrorHandler.internal_server_error(e)
 
-    return request
+    return request_
 
 
 @router.delete("/{id}")
@@ -82,19 +82,19 @@ async def create_request_by_id_route(
         request: Request,
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of request to delete")):
-
-    user_id = request.user_id
-    request_controller = RequestController(db)
-
-    # check user_id
-    request = request_controller.get_by_id(id)
-    if user_id != request.user_id:
-        ErrorHandler.access_denied("Request")
-
     try:
-        request = request_controller.delete(id)
+        user_id = request.user_id
+        request_controller = RequestController(db)
+
+        # check user_id
+        request_ = request_controller.get_by_id(id)
+        if user_id != request_.user_id:
+            ErrorHandler.access_denied("Request")
+            return
+
+        request_ = request_controller.delete(id)
         db.close()
     except Exception as e:
         ErrorHandler.internal_server_error(e)
 
-    return request
+    return request_

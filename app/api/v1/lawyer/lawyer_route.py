@@ -42,36 +42,42 @@ async def get_lawyer_by_id_route(
 
 @router.post("/register")  # TODO fix session error
 async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get_db)):
-    lawyer_controller = LawyerController(db)
-    user_controller = UserController(db)
-
-    # check phone_number
-    user = user_controller.get_by_phone_number(
-        data.phone_number)  # TODO check phone_number format
-    if user:
-        ErrorHandler.bad_request("Phone number does exist")
-
-    # check username
-    user = user_controller.get_by_username(data.username)
-    if user:
-        ErrorHandler.bad_request("Username does exist")
-
-    # check email (if exists)
-    if data.email:
-        user = user_controller.get_by_email(data.email)
-        if user:
-            ErrorHandler.bad_request("Email does exist")
-
-    # check license_code
-    lawyer = lawyer_controller.get_by_license_code(data.license_code)
-    if lawyer:
-        ErrorHandler.bad_request("This license code does exists!")
-
-    # hash user's password
-    if not validate_password_pattern(data.password):
-        return ErrorHandler.bad_request("Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
-
     try:
+        lawyer_controller = LawyerController(db)
+        user_controller = UserController(db)
+
+        # check phone_number
+        user = user_controller.get_by_phone_number(
+            data.phone_number)  # TODO check phone_number format
+        if user:
+            ErrorHandler.bad_request("Phone number does exist")
+            return
+
+        # check username
+        user = user_controller.get_by_username(data.username)
+        if user:
+            ErrorHandler.bad_request("Username does exist")
+            return
+
+        # check email (if exists)
+        if data.email:
+            user = user_controller.get_by_email(data.email)
+            if user:
+                ErrorHandler.bad_request("Email does exist")
+                return
+
+        # check license_code
+        lawyer = lawyer_controller.get_by_license_code(data.license_code)
+        if lawyer:
+            ErrorHandler.bad_request("This license code does exists!")
+            return
+
+        # hash user's password
+        if not validate_password_pattern(data.password):
+            ErrorHandler.bad_request(
+                "Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
+            return
+
         hashed_password = get_password_hash(data.password)
 
         # create user and then lawyer

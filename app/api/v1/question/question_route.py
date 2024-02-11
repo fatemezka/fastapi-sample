@@ -117,16 +117,16 @@ async def delete_question_by_id_route(
         request: Request,
         db: Session = Depends(get_db),
         id: int = Path(description="This is ID of question to delete")):
-
-    user_id = request.user_id
-    question_controller = QuestionController(db)
-
-    # check user_id
-    question = question_controller.get_by_id(id)
-    if user_id != question.user_id:
-        ErrorHandler.access_denied("Question")
-
     try:
+        user_id = request.user_id
+        question_controller = QuestionController(db)
+
+        # check user_id
+        question = question_controller.get_by_id(id)
+        if user_id != question.user_id:
+            ErrorHandler.access_denied("Question")
+            return
+
         question = question_controller.delete(id)
         db.close()
     except Exception as e:
