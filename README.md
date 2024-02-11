@@ -1,6 +1,6 @@
 # Goodlawyer FastAPI Project
 
-This project is like a law social media platform and it will be used by 2 types of people, lawyers who represent themselfs in this website and see the list of raw legal requests from clients and they can offer their price. on the other hands we have clients (normal people) who can ask their legal questions or ask their request from specific lawyer, so lawyer answer them.
+This project is like a law social media platform and it will be used by 2 types of people lawyers and clients. Lawyers who represent themselfs in this website and see the list of legal requests from clients and they can offer their price. On the other hand we have clients (normal user) who can ask their legal questions or ask their request from specific lawyer, so lawyers will answer them.
 
 ## Install Package Dependencies:
 
