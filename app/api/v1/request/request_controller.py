@@ -12,8 +12,8 @@ class RequestController:
     def get_all(self):
         return self.db.query(Request).all()
 
-    def get_all_subjects(self):
-        return self.db.query(RequestSubject).all()
+    def get_all_subjects(self, request_type: str):
+        return self.db.query(RequestSubject).filter(RequestSubject.request_type == request_type).all()
 
     def get_by_id(self, id: int):
         return self.db.query(Request).filter(Request.id == id).first()

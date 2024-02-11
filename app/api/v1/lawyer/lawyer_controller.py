@@ -20,7 +20,7 @@ class LawyerController:
         return self.db.query(Lawyer).filter(Lawyer.user_id == user_id).first()
 
     def get_by_id_and_user_id(self, id: int, user_id: int):
-        return self.db.query(Lawyer).filter(Lawyer.id == id and Lawyer.user_id == user_id).first()
+        return self.db.query(Lawyer).filter(Lawyer.id == id, Lawyer.user_id == user_id).first()
 
     def get_by_license_code(self, license_code: str):
         return self.db.query(Lawyer).filter(Lawyer.license_code == license_code).first()

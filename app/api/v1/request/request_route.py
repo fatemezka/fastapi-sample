@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, Request
+from fastapi import APIRouter, Depends, Path, Request, Query
 from app.schemas import ICreateRequest
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
@@ -21,11 +21,14 @@ async def get_requests_route(db: Session = Depends(get_db)):
     return requests
 
 
-@router.get("/subject/all")  # TODO get request_type
-async def get_request_subjects_route(db: Session = Depends(get_db)):
+@router.get("/subject/all")
+async def get_request_subjects_route(
+        db: Session = Depends(get_db),
+        request_type: str = Query(None)):
     try:
         request_controller = RequestController(db)
-        request_subjects = request_controller.get_all_subjects()
+        request_subjects = request_controller.get_all_subjects(
+            request_type=request_type)
         db.close()
     except Exception as e:
         ErrorHandler.internal_server_error(e)
