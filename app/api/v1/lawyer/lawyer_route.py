@@ -98,6 +98,7 @@ async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get
         )
         db.close()
 
+        print("Result:", result)
         # generate jwt token
         user = result["user"]
         lawyer = result["lawyer"]

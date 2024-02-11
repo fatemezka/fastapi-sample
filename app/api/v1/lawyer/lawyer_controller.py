@@ -45,48 +45,57 @@ class LawyerController:
         office_phone_number:  Optional[str] = None,
         office_address:  Optional[str] = None
     ):
-        try:
-            with self.db.begin():
-                # first create user
-                new_user = User(
-                    is_lawyer=True,
-                    username=username,
-                    name=name,
-                    family=family,
-                    phone_number=phone_number,
-                    hashed_password=hashed_password,
-                    email=email,
-                    marital_status=marital_status,
-                    age=age,
-                    sex=sex,
-                    province_id=province_id,
-                    city_id=city_id,
-                    profile_photo=profile_photo
-                )
-                self.db.add(new_user)
-                self.db.refresh(new_user)
-                self.db.flush()
+        # first create user
+        # new_user = User(
+        #     is_lawyer=True,
+        #     username=username,
+        #     name=name,
+        #     family=family,
+        #     phone_number=phone_number,
+        #     hashed_password=hashed_password,
+        #     email=email,
+        #     marital_status=marital_status,
+        #     age=age,
+        #     sex=sex,
+        #     province_id=province_id,
+        #     city_id=city_id,
+        #     profile_photo=profile_photo
+        # )
+        # self.db.add(new_user)
+        # self.db.refresh(new_user)
+        # self.db.flush()
+        user_controller = UserController(self.db)
+        new_user = user_controller.create(
+            is_lawyer=True,
+            username=username,
+            name=name,
+            family=family,
+            phone_number=phone_number,
+            email=email,
+            marital_status=marital_status,
+            age=age,
+            sex=sex,
+            province_id=province_id,
+            city_id=city_id,
+            hashed_password=hashed_password,
+            profile_photo=profile_photo
+        )
 
-                # then create lawyer
-                new_lawyer = Lawyer(
-                    user_id=new_user.id,
-                    edu_degree=edu_degree,
-                    study_field=study_field,
-                    license_code=license_code,
-                    position=position,
-                    experience_years=experience_years,
-                    biography=biography,
-                    office_phone_number=office_phone_number,
-                    office_address=office_address
-                )
-                self.db.add(new_lawyer)
-                self.db.flush()
-                self.db.refresh(new_lawyer)
-            self.db.commit()
-            return {
-                "user": new_user,
-                "lawyer": new_lawyer
-            }
-        except SQLAlchemyError as e:
-            self.db.rollback()
-            ErrorHandler.database_error(e)
+        # then create lawyer
+        new_lawyer = Lawyer(
+            user_id=new_user.id,
+            edu_degree=edu_degree,
+            study_field=study_field,
+            license_code=license_code,
+            position=position,
+            experience_years=experience_years,
+            biography=biography,
+            office_phone_number=office_phone_number,
+            office_address=office_address
+        )
+        self.db.add(new_lawyer)
+        self.db.commit()
+        return {
+            "user": new_user,
+            "lawyer": new_lawyer
+        }
