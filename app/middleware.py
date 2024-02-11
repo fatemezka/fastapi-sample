@@ -13,13 +13,19 @@ class CustomMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next, db: Session = Depends(get_db)):
         print("CustomMiddleware applied.")  # TODO remove
 
-        if request.url.path.startswith("/specific-api") and request.method == "POST":
-            # if route needs lawyer's auth
-            if ():
-                await self.lawyer_authenticate(request, db)
-            # if route only needs user's auth
-            else:
-                await self.user_authenticate(request, db)
+        # # TODO separate paths
+        # if request.url.path.startswith("/specific-api") and request.method == "POST":
+        #     # if route needs lawyer's auth
+        #     if ():
+        #         await self.lawyer_authenticate(request, db)
+        #     # if route only needs user's auth
+        #     else:
+        #         await self.user_authenticate(request, db)
+
+        if request.url.path.startswith("/lawyer"):
+            await self.lawyer_authenticate(request, db)
+        elif request.url.path.startswith("/user"):
+            await self.user_authenticate(request, db)
 
         # Continue processing the request
         response = await call_next(request)
