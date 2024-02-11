@@ -26,7 +26,7 @@ To run this project first go to project directory and then:
   uvicorn app.main:app --reload
 ```
 
-then you project will run and you can see the APIs documentation which is prepared by fastapi in these 2 urls:
+then you project will run on port 8000 on localhost, so you can see the APIs documentation which is prepared by fastapi in these 2 urls:
 
 1. http://localhost:8000/docs
 2. http://localhost:8000/redoc
@@ -61,6 +61,7 @@ then you project will run and you can see the APIs documentation which is prepar
   POST /question
   POST /question/{id}/answer
   DELETE /question/{id}
+```
 
 #### Request API
 
