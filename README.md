@@ -20,7 +20,8 @@ This project is like a law social media platform and it will be used by 2 types 
 
 ## Deployment
 
-To run this project first go to project directory and then:
+To run this project first make a file *.env* in the root of your project's directory and put *.env.template* keys in there and gave them proper values. as you know *.env.template* is just a template file to guide you what stuff should you have in your .env file and gave them some values.
+And then:
 
 ```python
   uvicorn app.main:app --reload
@@ -73,3 +74,6 @@ then you project will run on port 8000 on localhost, so you can see the APIs doc
   DELETE /request/{id}
 ```
 
+## Some Details
+
+In this project I used FastAPI python framework and SqlAlchemy as ORM to mysql database.
