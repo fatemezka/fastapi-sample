@@ -10,13 +10,12 @@ class QuestionController:
         self.db = db
 
     def get_all(self):
-        return self.db.query(Question).all()  # TODO filter
+        return self.db.query(Question).all()
 
     def get_all_categories(self):
         return self.db.query(QuestionCategory).all()
 
     def get_question_all_answers(self, question_id: int):
-        # TODO filter
         return self.db.query(Answer).filter(Answer.question_id == question_id).all()
 
     def get_by_id(self, id: int):
