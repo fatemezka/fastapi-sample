@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.database import MaritalStatus, Sex, LawyerPosition, EducationDegree, RequestType
+from app.models import MaritalStatus, Sex, LawyerPosition, EducationDegree, RequestType
 
 
 # User

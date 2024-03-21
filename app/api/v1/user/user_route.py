@@ -4,7 +4,7 @@ from app.schemas import IRegisterUser, ILogin
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
 from app.utils.token_operator import token_generator
-from app.database import get_db
+from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
 from app.api.v1.lawyer.lawyer_controller import LawyerController
 from app.utils.password_operator import get_password_hash, verify_password, validate_password_pattern

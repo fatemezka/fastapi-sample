@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, Request
 from app.schemas import ICreateQuestion, ICreateAnswer
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
-from app.database import get_db
+from app.db.base import get_db
 from app.api.v1.question.question_controller import QuestionController
 
 

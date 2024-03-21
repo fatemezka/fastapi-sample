@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 from app.utils.error_handler import ErrorHandler
 from app.utils.token_operator import token_generator
-from app.database import get_db
+from app.db.base import get_db
 from app.schemas import IRegisterLawyer, ILogin
 from app.api.v1.lawyer.lawyer_controller import LawyerController
 from app.api.v1.user.user_controller import UserController
