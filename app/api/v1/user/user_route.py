@@ -1,143 +1,85 @@
-from fastapi import APIRouter, Depends, Path
-from jose import jwt
-from app.schemas import IRegisterUser, ILogin
-from sqlalchemy.orm import Session
-from app.utils.error_handler import ErrorHandler
-from app.utils.token_operator import token_generator
+from fastapi import APIRouter, Depends, Path, Body
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
-from app.api.v1.lawyer.lawyer_controller import LawyerController
-from app.utils.password_operator import get_password_hash, verify_password, validate_password_pattern
-
+from app.schemas import ICreateUserBody, ILoginUser
 
 router = APIRouter()
 
-
-@router.get("/all")
-async def get_users_route(db: Session = Depends(get_db)):
-    try:
-        user_controller = UserController(db)
-        users = user_controller.get_all()
-        db.close()
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
-
-    return users
+# TODO add title and description to Body, Query, Path
 
 
-@router.get("/{id}")
+# get by ID
+@router.get("/{user_id}")
 async def get_user_by_id_route(
-        db: Session = Depends(get_db),
-        id: int = Path(description="This is ID of user to return")):
-    try:
-        user_controller = UserController(db)
-        user = user_controller.get_by_id(id)
-        db.close()
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
-
-    if not user:
-        ErrorHandler.not_found("User")
+        user_id: int = Path(
+            title="User id",
+            description="This is ID of user to return"
+        ),
+        db: AsyncSession = Depends(get_db)
+):
+    user_controller = UserController(db)
+    user = await user_controller.get_by_id(id=user_id)
+    await db.close()
 
     return user
 
 
+# register
 @router.post("/register")
-async def register_user_route(data: IRegisterUser, db: Session = Depends(get_db)):
-    try:
-        user_controller = UserController(db)
+async def register_route(
+        data: ICreateUserBody = Body(),
+        db: AsyncSession = Depends(get_db)
+):
+    user_controller = UserController(db)
 
-        # check phone_number
-        user = user_controller.get_by_phone_number(
-            data.phone_number)  # TODO check phone_number format
-        if user:
-            ErrorHandler.bad_request("Phone number does exist")
-            return
-
-        # check username
-        user = user_controller.get_by_username(data.username)
-        if user:
-            ErrorHandler.bad_request("Username does exist")
-            return
-
-        # check email (if exists)
-        if data.email:
-            user = user_controller.get_by_email(data.email)
-            if user:
-                ErrorHandler.bad_request("Email does exist")
-                return
-
-        # hash user's password
-        if not validate_password_pattern(data.password):
-            ErrorHandler.bad_request(
-                "Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
-            return
-
-        hashed_password = get_password_hash(data.password)
-
-        # create a new user
-        user = user_controller.create(
-            is_lawyer=False,
-            username=data.username,
-            name=data.name,
-            family=data.family,
-            phone_number=data.phone_number,
-            hashed_password=hashed_password,
-            email=data.email or None,
-            marital_status=data.marital_status,
-            age=data.age or None,
-            sex=data.sex or None,
-            province_id=data.province_id or None,
-            city_id=data.city_id or None,
-            profile_photo=data.profile_photo or None
-        )
-        db.close()
-
-        # generate jwt token
-        user_token = token_generator(
-            user_id=user.id, lawyer_id=None, is_lawyer=False)
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
+    # create a new user
+    user_items = {
+        "username": data.username,
+        "fullname": data.fullname,
+        "email": data.email,
+        "hashedPassword": data.hashedPassword,
+    }
+    user = await user_controller.create(user_items=user_items)
+    await db.close()
 
     return {
-        "user": user,
-        "user_token": user_token
+        "user": user
     }
 
 
+# login
 @router.post("/login")
-async def login_user_route(data: ILogin, db: Session = Depends(get_db)):
-    try:
-        user_controller = UserController(db)
-        user = user_controller.get_by_phone_number(data.phone_number)
-        if not user:
-            ErrorHandler.bad_request("Phone number does not exist")
-            return
-
-        is_valid_password = verify_password(
-            data.password, user.hashed_password)
-        if not is_valid_password:
-            ErrorHandler.bad_request("Password is incorrect")
-            return
-
-        db.close()
-
-        is_lawyer = False
-        lawyer_id = None
-        lawyer_controller = LawyerController(db)
-        lawyer = lawyer_controller.get_by_user_id(user.id)
-        if lawyer:
-            is_lawyer = True
-            lawyer_id = lawyer.id
-
-        # generate jwt token
-        token = token_generator(
-            user_id=user.id, lawyer_id=lawyer_id, is_lawyer=is_lawyer)
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
+async def login_route(
+        data: ILoginUser = Body(),
+        db: AsyncSession = Depends(get_db)
+):
+    user_controller = UserController(db)
+    user = await user_controller.get_by_username(username=data.username)
+    await db.close()
 
     return {
-        "user": user,
-        "lawyer": lawyer,
-        "token": token
+        "user": user
     }
+
+
+# logout
+@router.post("/logout")
+async def login_route(
+        data: ILoginUser = Body(),
+        db: AsyncSession = Depends(get_db)
+):
+    return "Logout successfully"
+
+
+# delete
+@router.delete("/{user_id}")
+async def login_route(
+        user_id: int = Path(),
+        db: AsyncSession = Depends(get_db)
+):
+    user_controller = UserController(db)
+    await user_controller.delete_by_id(id=user_id)
+    await db.close()
+
+    return "Deleted successfully"

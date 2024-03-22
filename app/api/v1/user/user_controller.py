@@ -1,61 +1,50 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.utils.error_handler import ErrorHandler
-from app.database import User
-from typing import Optional
+from app.models import User
+from app.schemas import ICreateUserController
 
 
 class UserController:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_all(self):
-        return self.db.query(User).all()
+    async def get_by_id(self, id: int):
+        user = (await self.db.execute(select(User).where(User.id == id))).scalar_one_or_none()
+        if not user:  # TODO
+            return
+        return user
 
-    def get_by_id(self, user_id: int):
-        return self.db.query(User).filter(User.id == user_id).first()
+    async def get_by_username(self, username: str):
+        user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
+        if not user:  # TODO
+            return
+        return user
 
-    def get_by_phone_number(self, phone_number: str):
-        return self.db.query(User).filter(User.phone_number == phone_number).first()
+    async def get_by_email(self, email: str):
+        user = (await self.db.execute(select(User).where(User.email == email))).scalar_one_or_none()
+        if not user:  # TODO
+            return
+        return user
 
-    def get_by_username(self, username: str):
-        return self.db.query(User).filter(User.username == username).first()
+    async def create(self, user_items: ICreateUserController):
+        async with self.db as async_session:
+            new_user = User(
+                username=user_items["username"],
+                fullname=user_items["fullname"],
+                email=user_items["email"],
+                hashedPassword=user_items["hashedPassword"]
+            )
+            async_session.add(new_user)
+            await async_session.commit()
+            await async_session.refresh(new_user)
+            return new_user
 
-    def get_by_email(self, email: str):
-        return self.db.query(User).filter(User.email == email).first()
+    async def delete_by_id(self, id: int):
+        user = await self.get_by_id(id=id)
 
-    def create(
-        self,
-        is_lawyer: bool,
-        username: str,
-        name: str,
-        family: str,
-        phone_number: str,
-        hashed_password: str,
-        email: Optional[str] = None,
-        marital_status: Optional[str] = None,
-        age: Optional[int] = None,
-        sex: Optional[str] = None,
-        province_id: Optional[int] = None,
-        city_id: Optional[int] = None,
-        profile_photo: Optional[str] = None
-    ):
-        new_user = User(
-            is_lawyer=is_lawyer,
-            username=username,
-            name=name,
-            family=family,
-            phone_number=phone_number,
-            email=email,
-            marital_status=marital_status,
-            age=age,
-            sex=sex,
-            province_id=province_id,
-            city_id=city_id,
-            hashed_password=hashed_password,
-            profile_photo=profile_photo
-        )
-        self.db.add(new_user)
-        self.db.commit()
-        self.db.refresh(new_user)
-        return new_user
+        if user:
+            await self.db.execute(delete(User).where(User.id == id))
+            await self.db.commit()
+        return

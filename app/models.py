@@ -4,24 +4,6 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.db.base import Base
 from enum import Enum as PyEnum
 
-# Models
-
-
-class User(Base):
-    __tablename__ = 'users'
-
-    id: Mapped[int] = mapped_column(
-        primary_key=True, nullable=False, autoincrement=True)
-    username: Mapped[str] = mapped_column(
-        String(255), nullable=False, unique=True)
-    fullname: Mapped[str] = mapped_column(String(255), nullable=True)
-    email: Mapped[str] = mapped_column(
-        String(255), nullable=False, unique=True)
-    createdAt: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, nullable=False)
-    updatedAt: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-
 
 # # Enums
 # class Gender(PyEnum):
@@ -57,6 +39,23 @@ class User(Base):
 
 
 # # Models
+class User(Base):
+    __tablename__ = 'users'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    username: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True)
+    fullname: Mapped[str] = mapped_column(String(255), nullable=True)
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True)
+    hashedPassword: Mapped[str] = mapped_column(String(255), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 # class User(Base):
 #     __tablename__ = "user"
 
