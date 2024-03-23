@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
 from app.schemas import ICreateUserBody, ILoginUser
+from app.utils.password_operator import get_password_hash
 
 router = APIRouter()
 
@@ -31,31 +32,16 @@ async def register_route(
         data: ICreateUserBody = Body(),
         db: AsyncSession = Depends(get_db)
 ):
-    user_controller = UserController(db)
-
-    # create a new user
+    # TODO check email, password, and not to return user's hashedPassword
+    hashedPassword = get_password_hash(password=data.password)
     user_items = {
         "username": data.username,
         "fullname": data.fullname,
         "email": data.email,
-        "hashedPassword": data.hashedPassword,
+        "hashedPassword": hashedPassword
     }
-    user = await user_controller.create(user_items=user_items)
-    await db.close()
-
-    return {
-        "user": user
-    }
-
-
-# login
-@router.post("/login")
-async def login_route(
-        data: ILoginUser = Body(),
-        db: AsyncSession = Depends(get_db)
-):
     user_controller = UserController(db)
-    user = await user_controller.get_by_username(username=data.username)
+    user = await user_controller.create(user_items=user_items)
     await db.close()
 
     return {
@@ -66,7 +52,6 @@ async def login_route(
 # logout
 @router.post("/logout")
 async def login_route(
-        data: ILoginUser = Body(),
         db: AsyncSession = Depends(get_db)
 ):
     return "Logout successfully"

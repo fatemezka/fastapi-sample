@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from sqlalchemy.exc import SQLAlchemyError
 from app.utils.error_handler import ErrorHandler
 from app.models import User
 from app.schemas import ICreateUserController
+from app.utils.password_operator import verify_password
 
 
 class UserController:
@@ -48,3 +48,12 @@ class UserController:
             await self.db.execute(delete(User).where(User.id == id))
             await self.db.commit()
         return
+
+    async def check_authentication(self, username: str, password: str):
+        user = await self.get_by_username(username=username)
+        if not user:
+            raise "error"  # TODO
+        if not verify_password(plain_password=password, hashed_password=user.hashedPassword):
+            raise "error"
+
+        return user

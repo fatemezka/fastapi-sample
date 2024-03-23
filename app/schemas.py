@@ -12,7 +12,7 @@ class Token(BaseModel):
 
 class ILoginUser(BaseModel):
     username: str
-    hashedPassword: str
+    password: str
 
 
 # just for test
@@ -23,17 +23,17 @@ class ModelName(str, Enum):
 
 
 # User
-class ICreateUserBody(BaseModel):
+class ISecureUser(BaseModel):
     username: str
     fullname: str
     email: str
-    hashedPassword: str
 
 
-class ICreateUserController(BaseModel):
-    username: str
-    fullname: str
-    email: str
+class ICreateUserBody(ISecureUser):
+    password: str
+
+
+class ICreateUserController(ISecureUser):
     hashedPassword: str
 
 
