@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 from app.middleware import CustomMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.test.test_route import router as test_router
 from app.api.v1.token.token_route import router as token_router
 from app.api.v1.user.user_route import router as user_router
 # from app.api.v1.lawyer.lawyer_route import router as lawyer_router
@@ -43,7 +42,6 @@ app.add_middleware(CustomMiddleware)
 
 # Routes
 ROUTE_PREFIX = ""  # TODO "/api/v1"
-app.include_router(test_router, prefix=ROUTE_PREFIX + "/test", tags=["Test"])
 app.include_router(token_router, prefix=ROUTE_PREFIX +
                    "/token", tags=["Token"])
 app.include_router(user_router, prefix=ROUTE_PREFIX + "/user", tags=["User"])
