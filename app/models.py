@@ -1,52 +1,54 @@
-from sqlalchemy import String, Text, ForeignKey
-from datetime import datetime, date
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy import String, Text, ForeignKey
 from app.db.base import Base
 from enum import Enum as PyEnum
+from datetime import datetime
 
 
-# # Enums
-# class Gender(PyEnum):
-#     MALE = "male"
-#     FEMALE = "female"
-#     NOT_SPECIFIED = "not_specified"
+# Enums
+class Gender(PyEnum):
+    MALE = 'male'
+    FEMALE = 'female'
 
 
-# class MaritalStatus(PyEnum):
-#     SINGLE = "Single"
-#     MARRIED = "Married"
+class MaritalStatus(PyEnum):
+    SINGLE = 'Single'
+    MARRIED = 'Married'
 
 
-# class LawyerPosition(PyEnum):
-#     LAWYER = "Lawyer"
-#     EXPERT = "Expert"
-#     LAWYER_EXPERT = "Lawyer_Expert"
-#     INTERN = "Intern"
+class LawyerPosition(PyEnum):
+    LAWYER = 'Lawyer'
+    EXPERT = 'Expert'
+    LAWYER_EXPERT = 'Lawyer_Expert'
+    INTERN = 'Intern'
 
 
-# class EducationDegree(PyEnum):
-#     BACHELOR = 'Bachelor'
-#     MASTERS = 'Masters'
-#     PHD = 'PHD'
-#     POSTDOCTORAL = 'Postdoctoral'
+class EducationDegree(PyEnum):
+    BACHELOR = 'Bachelor'
+    MASTERS = 'Masters'
+    PHD = 'PHD'
+    POSTDOCTORAL = 'Postdoctoral'
 
 
-# class RequestType(PyEnum):
-#     STATEMENT = "Statement"
-#     PETITION = "Petition"
-#     BILL = "Bill"
-#     COMPLAINT = "Complaint"
+class RequestType(PyEnum):
+    STATEMENT = 'Statement'
+    PETITION = 'Petition'
+    BILL = 'Bill'
+    COMPLAINT = 'Complaint'
 
 
-# # Models
+# Models
 class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(
         primary_key=True, nullable=False, autoincrement=True)
+    isLawyer: Mapped[bool] = mapped_column(nullable=False, default=False)
     username: Mapped[str] = mapped_column(
         String(255), nullable=False, unique=True)
-    fullname: Mapped[str] = mapped_column(String(255), nullable=True)
+    fullname: Mapped[str] = mapped_column(String(255), nullable=False)
+    phoneNumber: Mapped[str] = mapped_column(
+        String(50), nullable=False, unique=True)
     email: Mapped[str] = mapped_column(
         String(255), nullable=False, unique=True)
     hashedPassword: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -55,161 +57,207 @@ class User(Base):
     updatedAt: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-
-# class User(Base):
-#     __tablename__ = "user"
-
-#     id = Column(Integer, primary_key=True)
-#     # lawyer_id = Column(Integer, ForeignKey("lawyer.id"), unique=True, nullable=True)
-#     is_lawyer = Column(Boolean, default=False)
-#     username = Column(String(255), unique=True)
-#     name = Column(String(255))
-#     family = Column(String(255))
-#     phone_number = Column(String(50), unique=True)
-#     email = Column(String(255), unique=True, nullable=True)
-#     marital_status = Column(Enum(MaritalStatus), nullable=True)
-#     age = Column(Integer, nullable=True)
-#     sex = Column(Enum(Sex), nullable=True)
-#     province_id = Column(Integer, ForeignKey("province.id"), nullable=True)
-#     city_id = Column(Integer, ForeignKey("city.id"), nullable=True)
-#     hashed_password = Column(String(255))
-#     # TODO set proper default
-#     profile_photo = Column(String(255), nullable=True)
-
-#     # relations
-#     lawyer = relationship("Lawyer", back_populates="user")
-#     requests = relationship("Request", back_populates="user")
-#     questions = relationship("Question", back_populates="user")
-#     province = relationship("Province", back_populates="users")
-#     city = relationship("City", back_populates="users")
+    # relations
+    lawyer = relationship('Lawyer', back_populates='user')
+    requests = relationship('Request', back_populates='user')
+    questions = relationship('Question', back_populates='user')
 
 
-# class Lawyer(Base):
-#     __tablename__ = "lawyer"
+class Lawyer(Base):
+    __tablename__ = 'lawyers'
 
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey("user.id"), unique=True)
-#     edu_degree = Column(Enum(EducationDegree))
-#     study_field = Column(String(255))
-#     license_code = Column(String(255), unique=True)
-#     position = Column(Enum(LawyerPosition))
-#     experience_years = Column(Integer)
-#     biography = Column(String(1500))
-#     office_phone_number = Column(String(50), nullable=True)
-#     office_address = Column(String(1000), nullable=True)
-#     # specialty_id = Column(Integer, ForeignKey("specialty.id"))
-#     # second_specialty_id = Column(Integer, ForeignKey("specialty.id"))
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    userId: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    gender: Mapped[Gender] = mapped_column(nullable=False)
+    age: Mapped[int] = mapped_column(nullable=False)
+    maritalStatus: Mapped[MaritalStatus] = mapped_column(
+        nullable=False, default=MaritalStatus.SINGLE)
+    provinceId: Mapped[int] = mapped_column(
+        ForeignKey('provinces.id'), nullable=False)
+    cityId: Mapped[int] = mapped_column(
+        ForeignKey('cities.id'), nullable=False)
+    eduDegree: Mapped[EducationDegree] = mapped_column(nullable=False)
+    studyField: Mapped[str] = mapped_column(String(255), nullable=False)
+    profilePic: Mapped[str] = mapped_column(
+        String(255), nullable=True, default='sampleProfilePicAddress.jpg')  # TODO
+    licenseCode: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True)
+    position: Mapped[LawyerPosition] = mapped_column(nullable=False)
+    experienceYears: Mapped[int] = mapped_column(nullable=False)
+    biography: Mapped[str] = mapped_column(Text, nullable=False)
+    officePhoneNumber: Mapped[str] = mapped_column(String(50), nullable=True)
+    officeAddress: Mapped[str] = mapped_column(Text, nullable=True)
+    firstSpecialtyId: Mapped[int] = mapped_column(
+        ForeignKey('specialties.id'), nullable=False)
+    secondSpecialtyId: Mapped[int] = mapped_column(ForeignKey(
+        'specialties.id'), nullable=False)  # TODO not the same
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-#     # relations
-#     user = relationship("User", back_populates="lawyer")
-#     requests = relationship("Request", back_populates="lawyer")
-#     questions = relationship("Question", back_populates="lawyer")
-#     answers = relationship("Answer", back_populates="lawyer")
-#     specialties = relationship("Specialty", back_populates="lawyers")
-#     # specialty = relationship("Specialty", foreign_keys=[first_specialty_id, second_specialty_id], back_populates="lawyers")
+    # relations
+    user = relationship('User', back_populates='lawyer')
+    province = relationship('Province', back_populates='lawyers')
+    city = relationship('City', back_populates='lawyers')
+    requests = relationship('Request', back_populates='lawyer')
+    questions = relationship('Question', back_populates='lawyer')
+    answers = relationship('Answer', back_populates='lawyer')
+    firstSpecialty = relationship('Specialty', back_populates='lawyers1')
+    secondSpecialty = relationship('Specialty', back_populates='lawyers2')
 
-
-# class Specialty(Base):
-#     __tablename__ = "specialty"
-
-#     id = Column(Integer, primary_key=True)
-#     lawyer_id = Column(Integer, ForeignKey("lawyer.id"))
-#     title = Column(String(255))
-
-#     # relations
-#     lawyers = relationship("Lawyer", back_populates="specialties")
-
-
-# class Request(Base):
-#     __tablename__ = "request"
-
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey("user.id"))
-#     lawyer_id = Column(Integer, ForeignKey("lawyer.id"), nullable=True)
-#     request_type = Column(Enum(RequestType))
-#     request_subject_id = Column(Integer, ForeignKey('request_subject.id'))
-#     description = Column(String(1000))
-#     attachment_1 = Column(String(1000), nullable=True)
-#     attachment_2 = Column(String(1000), nullable=True)
-#     attachment_3 = Column(String(1000), nullable=True)
-
-#     # relations
-#     user = relationship("User", back_populates="requests")
-#     lawyer = relationship("Lawyer", back_populates="requests")
-#     request_subject = relationship("RequestSubject", back_populates="requests")
+    # specialties = relationship('Specialty', back_populates='lawyers')
+    # # specialty = relationship('Specialty', foreign_keys=[first_specialty_id, second_specialty_id], back_populates='lawyers')
 
 
-# class RequestSubject(Base):
-#     __tablename__ = "request_subject"
+class Specialty(Base):
+    __tablename__ = 'specialties'
 
-#     id = Column(Integer, primary_key=True)
-#     request_type = Column(Enum(RequestType))
-#     title = Column(String(500))
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-#     # relations
-#     requests = relationship("Request", back_populates="request_subject")
-
-
-# class Question(Base):
-#     __tablename__ = "question"
-
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey("user.id"))
-#     lawyer_id = Column(Integer, ForeignKey("lawyer.id"), nullable=True)
-#     question_category_id = Column(Integer, ForeignKey('question_category.id'))
-#     description = Column(String(1000))
-#     is_private = Column(Boolean, default=False)
-
-#     # relations
-#     user = relationship("User", back_populates="questions")
-#     lawyer = relationship("Lawyer", back_populates="questions")
-#     question_category = relationship(
-#         "QuestionCategory", back_populates="questions")
-#     answers = relationship("Answer", back_populates="question")
+    # relations
+    lawyers1 = relationship('Lawyer', back_populates='firstSpecialty')
+    lawyers2 = relationship('Lawyer', back_populates='secondSpecialty')
 
 
-# class QuestionCategory(Base):
-#     __tablename__ = "question_category"
+class Request(Base):
+    __tablename__ = 'requests'
 
-#     id = Column(Integer, primary_key=True)
-#     title = Column(String(500))
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    userId: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    lawyerId: Mapped[int] = mapped_column(
+        ForeignKey('lawyers.id'), nullable=True)
+    requestType: Mapped[RequestType] = mapped_column(nullable=False)
+    requestSubjectId: Mapped[int] = mapped_column(
+        ForeignKey('request_subjects.id'), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    attachment1: Mapped[str] = mapped_column(String(500), nullable=True)
+    attachment2: Mapped[str] = mapped_column(String(500), nullable=True)
+    attachment3: Mapped[str] = mapped_column(String(500), nullable=True)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-#     # relations
-#     questions = relationship("Question", back_populates="question_category")
-
-
-# class Answer(Base):
-#     __tablename__ = "answer"
-
-#     id = Column(Integer, primary_key=True)
-#     lawyer_id = Column(Integer, ForeignKey(
-#         "lawyer.id"))             # TODO check
-#     question_id = Column(Integer, ForeignKey("question.id"))
-#     description = Column(String(1000))
-
-#     # relations
-#     lawyer = relationship("Lawyer", back_populates="answers")
-#     question = relationship("Question", back_populates="answers")
-
-
-# class Province(Base):
-#     __tablename__ = "province"
-
-#     id = Column(Integer, primary_key=True)
-#     title = Column(String(500))
-
-#     # relations
-#     cities = relationship("City", back_populates="province")
-#     users = relationship("User", back_populates="province")
+    # relations
+    user = relationship('User', back_populates='requests')
+    lawyer = relationship('Lawyer', back_populates='requests')
+    requestSubject = relationship('RequestSubject', back_populates='requests')
 
 
-# class City(Base):
-#     __tablename__ = "city"
+class RequestSubject(Base):
+    __tablename__ = 'request_subjects'
 
-#     id = Column(Integer, primary_key=True)
-#     province_id = Column(Integer, ForeignKey('province.id'))
-#     title = Column(String(500))
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    requestType: Mapped[RequestType] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-#     # relations
-#     province = relationship("Province", back_populates="cities")
-#     users = relationship("User", back_populates="city")
+    # relations
+    requests = relationship('Request', back_populates='requestSubject')
+
+
+class Question(Base):
+    __tablename__ = 'questions'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    userId: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    lawyerId: Mapped[int] = mapped_column(
+        ForeignKey('lawyers.id'), nullable=True)
+    questionCategoryId: Mapped[int] = mapped_column(
+        ForeignKey('question_categories.id'), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    isPrivate: Mapped[bool] = mapped_column(nullable=False, default=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # relations
+    user = relationship('User', back_populates='questions')
+    lawyer = relationship('Lawyer', back_populates='questions')
+    questionCategory = relationship(
+        'QuestionCategory', back_populates='questions')
+    answers = relationship('Answer', back_populates='question')
+
+
+class QuestionCategory(Base):
+    __tablename__ = 'question_categories'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # relations
+    questions = relationship('Question', back_populates='questionCategory')
+
+
+class Answer(Base):
+    __tablename__ = 'answers'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    questionId: Mapped[int] = mapped_column(
+        ForeignKey('questions.id'), nullable=False)
+    lawyerId: Mapped[int] = mapped_column(
+        ForeignKey('lawyers.id'), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # relations
+    lawyer = relationship('Lawyer', back_populates='answers')
+    question = relationship('Question', back_populates='answers')
+
+
+class Province(Base):
+    __tablename__ = 'provinces'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # relations
+    cities = relationship('City', back_populates='province')
+    lawyers = relationship('Lawyer', back_populates='province')
+
+
+class City(Base):
+    __tablename__ = 'cities'
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True)
+    provinceId: Mapped[int] = mapped_column(
+        ForeignKey('provinces.id'), nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False)
+    updatedAt: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # relations
+    province = relationship('Province', back_populates='cities')
+    lawyers = relationship('Lawyer', back_populates='city')
