@@ -28,6 +28,25 @@ class ICreateUserController(ISecureUser):
     hashedPassword: str
 
 
+class IUpdateUserBody(BaseModel):
+    username: Optional[str] = None
+    fullname: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    email: Optional[str] = None
+
+
+class IUpdateUserController(BaseModel):
+    username: Optional[str] = None
+    fullname: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    email: Optional[str] = None
+
+
+class IUpdateUserPasswordBody(BaseModel):
+    currentPassword: str
+    newPassword: str
+
+
 # # Lawyer
 # class IRegisterLawyer(BaseModel):
 #     username: str
