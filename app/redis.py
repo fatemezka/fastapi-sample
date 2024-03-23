@@ -53,5 +53,4 @@ class RedisPool:
             await self.redis_pool.delete(redis_key)
 
     async def get_value(self, key):
-        check_redis_key = await self.redis_pool.get(name=key)
-        return bool(check_redis_key)
+        return await self.redis_pool.get(name=key)

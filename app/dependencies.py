@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
 from app.utils.error_handler import ErrorHandler
+from app.redis import RedisPool
 
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -23,16 +24,22 @@ async def get_current_user(
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("user_id")
         if user_id is None:
-            raise ErrorHandler.user_unauthorized(
-                message="Could not validate credentials")
+            raise JWTError
+
+        user_controller = UserController(db)
+        user = await user_controller.get_by_id(id=user_id)
+        if user is None:
+            raise JWTError
 
     except JWTError:
         raise ErrorHandler.user_unauthorized(message="Token is not valid.")
 
-    user_controller = UserController(db)
-    user = await user_controller.get_by_id(id=user_id)
-
-    if user is None:
-        raise ErrorHandler.user_unauthorized(message="Token is not valid.")
+    # check stored_token
+    redis_pool = RedisPool()
+    await redis_pool.connect()
+    stored_token = await redis_pool.get_value(key=user.email)
+    if token != stored_token:
+        raise ErrorHandler.user_unauthorized(
+            message="Token is expired.")
 
     return user
