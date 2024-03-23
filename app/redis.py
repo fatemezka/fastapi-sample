@@ -24,7 +24,10 @@ class RedisPool:
             await self.redis_pool.setex(name=ip, time=60, value=1)
             return
         counter = int(await self.redis_pool.get(name=ip))
-        if counter >= 5:
+
+        ALLOWED_REQUEST_ATTEMPTS_PER_MINUTE = int(os.environ.get(
+            "ALLOWED_REQUEST_ATTEMPTS_PER_MINUTE"))
+        if counter >= ALLOWED_REQUEST_ATTEMPTS_PER_MINUTE:
             raise ErrorHandler.too_many_request()
 
         counter += 1

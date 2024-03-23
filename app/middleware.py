@@ -6,14 +6,13 @@ from app.utils.error_handler import CustomException
 from fastapi.responses import JSONResponse
 import logging
 from app.redis import RedisPool
-from fastapi.middleware.cors import CORSMiddleware
 
 
 class CustomMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
-            # # check request count per minute
-            # await self.check_request_attempts(request)
+            # check request count per minute
+            await self.control_request_attempts(request)
 
             # log request info
             self.log_request(request)
@@ -40,9 +39,11 @@ class CustomMiddleware(BaseHTTPMiddleware):
         with open("request_logger.log", 'a') as log_file:
             log_file.write(request_data)
 
-    async def check_request_attempts(self, request: Request):
+    async def control_request_attempts(self, request: Request):
         if not request.client:
             return  # for unit-testing
+
         client_ip = request.client.host
-        redis_controller = await RedisPool()
-        await redis_controller.increase_request_attempts(client_ip)
+        redis_pool = RedisPool()
+        await redis_pool.connect()
+        await redis_pool.increase_request_attempts(client_ip)
