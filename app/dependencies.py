@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
 from app.utils.error_handler import ErrorHandler
-from app.redis import RedisPool
+from app.redis_pool import RedisPool
 
 
 SECRET_KEY = os.environ.get("SECRET_KEY")

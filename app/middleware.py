@@ -5,7 +5,7 @@ from datetime import datetime
 from app.utils.error_handler import CustomException
 from fastapi.responses import JSONResponse
 import logging
-from app.redis import RedisPool
+from app.redis_pool import RedisPool
 
 
 class CustomMiddleware(BaseHTTPMiddleware):
