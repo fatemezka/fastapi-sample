@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from app.db.base import create_all_tables
 import logging
-from app.utils.error_handler import CustomException
-from fastapi.responses import JSONResponse
 from app.middleware import CustomMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,9 +25,10 @@ async def startup_db():
     await create_all_tables()
 
 
-# Middlewares
-allowed_origins = [
-    "http://localhost:3000",  # TODO get from redis
+# Middleware
+allowed_origins = [  # TODO read from redis
+    "http://localhost:3000",
+    "http://localhost:6000"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -40,11 +39,11 @@ app.add_middleware(
 )
 app.add_middleware(CustomMiddleware)
 
+
 # Routes
 ROUTE_PREFIX = ""  # TODO "/api/v1"
-app.include_router(token_router, prefix=ROUTE_PREFIX +
-                   "/token", tags=["Token"])
-app.include_router(user_router, prefix=ROUTE_PREFIX + "/user", tags=["User"])
+app.include_router(token_router, prefix=ROUTE_PREFIX+"/token", tags=["Token"])
+app.include_router(user_router, prefix=ROUTE_PREFIX+"/user", tags=["User"])
 # app.include_router(lawyer_router, prefix=ROUTE_PREFIX + "/lawyer", tags=["Lawyer"])
 # app.include_router(request_router, prefix=ROUTE_PREFIX + "/request", tags=["Request"])
 # app.include_router(question_router, prefix=ROUTE_PREFIX + "/question", tags=["Question"])

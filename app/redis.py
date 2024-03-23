@@ -3,13 +3,20 @@ from app.db.redis import create_redis_pool
 from app.utils.error_handler import ErrorHandler
 
 
-class RedisController:
-    async def __init__(self):
+class RedisPool:
+    def __init__(self):
+        self.redis_pool = None
+
+    async def connect(self):
         self.redis_pool = await create_redis_pool()
 
     async def get_allowed_ip_list(self):
         allowed_ip_list = await self.redis_pool.lrange("allowed_ip_list", 0, -1) or []
         return allowed_ip_list
+
+    async def get_allowed_origins(self):
+        allowed_origins = await self.redis_pool.lrange("allowed_origins", 0, -1) or []
+        return allowed_origins
 
     async def increase_request_attempts(self, ip):
         existing_redis_ip = await self.get_value(ip)
