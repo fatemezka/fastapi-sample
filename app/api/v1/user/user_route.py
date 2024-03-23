@@ -9,7 +9,6 @@ from app.dependencies import get_current_user
 from app.utils.error_handler import ErrorHandler
 
 router = APIRouter()
-# TODO handle errors list
 
 
 # register
@@ -40,6 +39,9 @@ async def register_route(
     user_controller.validate_password_pattern(
         data.password, error_list=error_list)
 
+    if error_list:
+        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
+
     user_items = {
         "isLawyer": False,
         "username": data.username,
@@ -50,9 +52,6 @@ async def register_route(
     }
     user = await user_controller.create(user_items=user_items)
     await db.close()
-
-    if error_list:
-        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
     return user
 
@@ -67,25 +66,31 @@ async def update_route(
 ):
     # check user access
     if user_id != current_user.id:
-        raise "do not have access"
+        raise ErrorHandler.access_denied("user")
 
+    error_list = []
     user_controller = UserController(db)
 
     # check username
     if data.username:
-        await user_controller.check_username_not_repeat(user_id, username=data.username)
-        user_controller.validate_username_pattern(username=data.username)
+        await user_controller.check_username_not_repeat(user_id, username=data.username, error_list=error_list)
+        user_controller.validate_username_pattern(
+            username=data.username, error_list=error_list)
 
     # check phoneNumber
     if data.phoneNumber:
-        await user_controller.check_phone_number_not_repeat(user_id, phone_number=data.phoneNumber)
+        await user_controller.check_phone_number_not_repeat(user_id, phone_number=data.phoneNumber, error_list=error_list)
         user_controller.validate_phone_number_pattern(
-            phone_number=data.phoneNumber)
+            phone_number=data.phoneNumber, error_list=error_list)
 
     # check email
     if data.email:
-        await user_controller.check_email_not_repeat(user_id, email=data.email)
-        # user_controller.validate_email_pattern(email=data.email) # TODO check
+        await user_controller.check_email_not_repeat(user_id, email=data.email, error_list=error_list)
+        # user_controller.validate_email_pattern(
+        #     email=data.email, error_list=error_list)  # TODO check
+
+    if error_list:
+        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
     user_items = {
         "username": data.username,
@@ -127,18 +132,23 @@ async def change_password_route(
 ):
     # check user access
     if user_id != current_user.id:
-        raise "do not have access"
+        raise ErrorHandler.access_denied("user")
 
     current_password = data.currentPassword
     new_password = data.newPassword
 
+    error_list = []
     user_controller = UserController(db)
 
     # verify password
-    await user_controller.verify_current_password(id=user_id, password=current_password)
+    await user_controller.verify_current_password(id=user_id, password=current_password, error_list=error_list)
 
     # check password
-    user_controller.validate_password_pattern(password=new_password)
+    user_controller.validate_password_pattern(
+        password=new_password, error_list=error_list)
+
+    if error_list:
+        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
     newHashedPassword = get_password_hash(new_password)
     await user_controller.update_password_by_id(id=user_id, new_password=newHashedPassword)

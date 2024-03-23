@@ -14,26 +14,26 @@ class UserController:
 
     async def get_by_id(self, id: int):
         user = (await self.db.execute(select(User).where(User.id == id))).scalar_one_or_none()
-        if not user:  # TODO
-            return
+        if not user:
+            raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_username(self, username: str):
         user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
-        if not user:  # TODO
-            return
+        if not user:
+            raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_email(self, email: str):
         user = (await self.db.execute(select(User).where(User.email == email))).scalar_one_or_none()
-        if not user:  # TODO
-            return
+        if not user:
+            raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_phone_number(self, phone_number: str):
         user = (await self.db.execute(select(User).where(User.phoneNumber == phone_number))).scalar_one_or_none()
-        if not user:  # TODO
-            return
+        if not user:
+            raise ErrorHandler.not_found("User")
         return user
 
     async def create(self, user_items: ICreateUserController):
@@ -78,23 +78,23 @@ class UserController:
 
     # validations
 
-    async def check_authentication(self, username: str, password: str):
+    async def check_authentication(self, username: str, password: str, error_list: list[str] = []):
         user = await self.get_by_username(username=username)
         if not user:
-            raise
+            error_list.append("User not found")
         is_valid_password = verify_password(
             plain_password=password, hashed_password=user.hashedPassword)
         if not is_valid_password:
-            raise
+            error_list.append("Password is incorrect.")
 
         return user
 
-    async def verify_current_password(self, id: int, password: str):
+    async def verify_current_password(self, id: int, password: str, error_list: list[str] = []):
         user = await self.get_by_id(id=id)
         is_verified = verify_password(
             plain_password=password, hashed_password=user.hashedPassword)
         if not is_verified:
-            raise
+            error_list.append("Current password is not correct.")
 
     def validate_password_pattern(self, password: str, error_list: list[str] = []):
         # Check length
@@ -148,9 +148,12 @@ class UserController:
         return error_list
 
     def validate_phone_number_pattern(self, phone_number: str, error_list: list[str] = []):
-        parsed_phone_number = phonenumbers.parse(phone_number)
-        is_valid = phonenumbers.is_possible_number(parsed_phone_number)
-        if not is_valid:
+        try:
+            parsed_phone_number = phonenumbers.parse(phone_number)
+            is_valid = phonenumbers.is_possible_number(parsed_phone_number)
+            if not is_valid:
+                raise
+        except:
             error_list.append("Phone number is not valid.")
 
     def validate_email_pattern(self, email: str, error_list: list[str] = []):
@@ -159,11 +162,10 @@ class UserController:
         if not re.fullmatch(regex, email):
             error_list.append("Email is not valid.")
 
-    async def check_username_exists(self, username: str):
+    async def check_username_exists(self, username: str, error_list: list[str] = []):
         user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
         if not user:
-            raise ErrorHandler.bad_request(
-                "User with this username does not exist.")
+            error_list.append("User with this username does not exist.")
 
     async def check_username_not_exists(self, username: str, error_list: list[str] = []):
         user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
@@ -180,28 +182,26 @@ class UserController:
         if user:
             error_list.append("User with this email does exist.")
 
-    async def check_username_not_repeat(self, user_id: int, username: str):
+    async def check_username_not_repeat(self, user_id: int, username: str, error_list: list[str] = []):
         existing_username = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
 
         user = (await self.db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
 
         if existing_username and existing_username.id != user.id:
-            raise ErrorHandler.bad_request(
-                custom_message="UserName is repeated.")
+            error_list.append("Username is repeated.")
 
-    async def check_phone_number_not_repeat(self, user_id: int, phone_number: str):
+    async def check_phone_number_not_repeat(self, user_id: int, phone_number: str, error_list: list[str] = []):
         existing_phone_number = (await self.db.execute(select(User).where(User.phoneNumber == phone_number))).scalar_one_or_none()
 
         user = (await self.db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
 
         if existing_phone_number and existing_phone_number.id != user.id:
-            raise ErrorHandler.bad_request(
-                custom_message="Phone number is repeated.")
+            error_list.append("Phone number is repeated.")
 
-    async def check_email_not_repeat(self, user_id: int, email: str):
+    async def check_email_not_repeat(self, user_id: int, email: str, error_list: list[str] = []):
         existing_email = (await self.db.execute(select(User).where(User.email == email))).scalar_one_or_none()
 
         user = (await self.db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
 
         if existing_email and existing_email.id != user.id:
-            raise ErrorHandler.bad_request(custom_message="Email is repeated.")
+            error_list.append("Email is repeated.")
