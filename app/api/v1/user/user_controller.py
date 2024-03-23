@@ -157,9 +157,8 @@ class UserController:
             error_list.append("Phone number is not valid.")
 
     def validate_email_pattern(self, email: str, error_list: list[str] = []):
-        regex = re.compile(
-            r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
-        if not re.fullmatch(regex, email):
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(pattern, email):
             error_list.append("Email is not valid.")
 
     async def check_username_exists(self, username: str, error_list: list[str] = []):

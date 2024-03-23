@@ -32,8 +32,8 @@ async def register_route(
 
     # check email
     await user_controller.check_email_not_exists(email=data.email, error_list=error_list)
-    # user_controller.validate_email_pattern(
-    #     email=data.username, error_list=error_list)  # TODO check
+    user_controller.validate_email_pattern(
+        email=data.email, error_list=error_list)
 
     # check password
     user_controller.validate_password_pattern(
@@ -86,8 +86,8 @@ async def update_route(
     # check email
     if data.email:
         await user_controller.check_email_not_repeat(user_id, email=data.email, error_list=error_list)
-        # user_controller.validate_email_pattern(
-        #     email=data.email, error_list=error_list)  # TODO check
+        user_controller.validate_email_pattern(
+            email=data.email, error_list=error_list)
 
     if error_list:
         raise ErrorHandler.bad_request(custom_message={"errors": error_list})
@@ -98,7 +98,7 @@ async def update_route(
         "phoneNumber": data.phoneNumber,
         "email": data.email
     }
-    user = await user_controller.update_by_id(id=user_id, user_items=user_items)
+    await user_controller.update_by_id(id=user_id, user_items=user_items)
     await db.close()
 
     return {"message": "User updated successfully"}
