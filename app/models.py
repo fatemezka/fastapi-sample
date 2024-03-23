@@ -43,6 +43,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True, nullable=False, autoincrement=True)
+    isAdmin: Mapped[bool] = mapped_column(nullable=False, default=False)
     isLawyer: Mapped[bool] = mapped_column(nullable=False, default=False)
     username: Mapped[str] = mapped_column(
         String(255), nullable=False, unique=True)
@@ -88,10 +89,12 @@ class Lawyer(Base):
     biography: Mapped[str] = mapped_column(Text, nullable=False)
     officePhoneNumber: Mapped[str] = mapped_column(String(50), nullable=True)
     officeAddress: Mapped[str] = mapped_column(Text, nullable=True)
-    firstSpecialtyId: Mapped[int] = mapped_column(
+    specialtyId: Mapped[int] = mapped_column(
         ForeignKey('specialties.id'), nullable=False)
-    secondSpecialtyId: Mapped[int] = mapped_column(ForeignKey(
-        'specialties.id'), nullable=False)  # TODO not the same
+    # firstSpecialtyId: Mapped[int] = mapped_column(
+    #     ForeignKey('specialties.id'), nullable=False)
+    # secondSpecialtyId: Mapped[int] = mapped_column(ForeignKey(
+    #     'specialties.id'), nullable=False)  # TODO not the same
     createdAt: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, nullable=False)
     updatedAt: Mapped[datetime] = mapped_column(
@@ -104,8 +107,9 @@ class Lawyer(Base):
     requests = relationship('Request', back_populates='lawyer')
     questions = relationship('Question', back_populates='lawyer')
     answers = relationship('Answer', back_populates='lawyer')
-    firstSpecialty = relationship('Specialty', back_populates='lawyers1')
-    secondSpecialty = relationship('Specialty', back_populates='lawyers2')
+    specialty = relationship('Specialty', back_populates='lawyers')
+    # firstSpecialty = relationship('Specialty', back_populates='lawyers1')
+    # secondSpecialty = relationship('Specialty', back_populates='lawyers2')
 
     # specialties = relationship('Specialty', back_populates='lawyers')
     # # specialty = relationship('Specialty', foreign_keys=[first_specialty_id, second_specialty_id], back_populates='lawyers')
@@ -123,8 +127,9 @@ class Specialty(Base):
         default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # relations
-    lawyers1 = relationship('Lawyer', back_populates='firstSpecialty')
-    lawyers2 = relationship('Lawyer', back_populates='secondSpecialty')
+    lawyers = relationship('Lawyer', back_populates='specialty')
+    # lawyers1 = relationship('Lawyer', back_populates='firstSpecialty')
+    # lawyers2 = relationship('Lawyer', back_populates='secondSpecialty')
 
 
 class Request(Base):

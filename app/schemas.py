@@ -4,17 +4,6 @@ from typing import Optional
 from enum import Enum
 
 
-# Token
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class ILoginUser(BaseModel):
-    username: str
-    password: str
-
-
 # just for test
 class ModelName(str, Enum):
     alexnet = "alexnet"
@@ -26,6 +15,7 @@ class ModelName(str, Enum):
 class ISecureUser(BaseModel):
     username: str
     fullname: str
+    phoneNumber: str
     email: str
 
 
@@ -34,37 +24,8 @@ class ICreateUserBody(ISecureUser):
 
 
 class ICreateUserController(ISecureUser):
+    isLawyer: bool
     hashedPassword: str
-
-
-# class IRegisterUser(BaseModel):
-#     username: str
-#     name: str
-#     family: str
-#     phone_number: str
-#     password: str
-#     email: Optional[str] = None
-#     marital_status: Optional[MaritalStatus] = None
-#     age: Optional[int] = None
-#     sex: Optional[Sex] = None
-#     province_id: Optional[int] = None
-#     city_id: Optional[int] = None
-#     profile_photo: Optional[str] = None
-
-
-# class IReturnUserInfo(BaseModel):
-#     id: int
-#     username: str
-#     name: str
-#     family: str
-#     phone_number: str
-#     email: Optional[str] = None
-#     marital_status: Optional[MaritalStatus] = None
-#     age: Optional[int] = None
-#     sex: Optional[Sex] = None
-#     province_id: Optional[int] = None
-#     city_id: Optional[int] = None
-#     profile_photo: Optional[str] = None
 
 
 # # Lawyer
