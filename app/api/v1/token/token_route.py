@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.api.v1.user.user_controller import UserController
 from app.utils.error_handler import ErrorHandler
+from app.redis import RedisPool
+
 
 router = APIRouter()
 
@@ -30,5 +32,11 @@ async def login_for_access_token(
         raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
     access_token = create_access_token(data={"user_id": user.id})
+
+    # store access_token in redis
+    redis_pool = RedisPool()
+    await redis_pool.connect()
+    await redis_pool.remove_token(user_email=user.email)
+    await redis_pool.store_token(user_email=user.email, token=access_token)
 
     return {"access_token": access_token, "token_type": "bearer"}

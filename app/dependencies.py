@@ -27,7 +27,7 @@ async def get_current_user(
                 message="Could not validate credentials")
 
     except JWTError:
-        raise ErrorHandler.user_unauthorized(message="Bad Token.")
+        raise ErrorHandler.user_unauthorized(message="Token is not valid.")
 
     user_controller = UserController(db)
     user = await user_controller.get_by_id(id=user_id)

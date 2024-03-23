@@ -34,8 +34,8 @@ class RedisPool:
         remaining_ttl = await self.redis_pool.ttl(ip)
         await self.redis_pool.setex(name=ip, time=remaining_ttl, value=counter)
 
-    async def store_token(self, user, token):
-        redis_key = user.email
+    async def store_token(self, user_email, token):
+        redis_key = user_email
         redis_value = token
 
         # set to redis
@@ -46,8 +46,8 @@ class RedisPool:
             time=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             value=redis_value)
 
-    async def remove_token(self, user):
-        redis_key = user.email
+    async def remove_token(self, user_email):
+        redis_key = user_email
         check_redis_key = await self.redis_pool.get(name=redis_key)
         if check_redis_key:
             await self.redis_pool.delete(redis_key)
