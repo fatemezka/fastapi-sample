@@ -80,8 +80,15 @@ class ICreateQuestionBody(BaseModel):
     isPrivate: bool
 
 
-class ICreateQuestionController(BaseModel):
+class ICreateQuestionController(ICreateQuestionBody):
     userId: int
-    questionCategoryId: int
+
+
+# Answer
+class ICreateAnswerBody(BaseModel):
+    questionId: int
     description: str
-    isPrivate: bool
+
+
+class ICreateAnswerController(ICreateAnswerBody):
+    lawyerId: int

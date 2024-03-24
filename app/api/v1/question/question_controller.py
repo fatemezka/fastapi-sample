@@ -48,3 +48,8 @@ class QuestionController:
         category = (await self.db.execute(select(QuestionCategory).where(QuestionCategory.id == category_id))).scalar_one_or_none()
         if not category:
             error_list.append("Category does not exist.")
+
+    async def check_question_exists(self, question_id: int, error_list: list[str] = []):
+        question = (await self.db.execute(select(Question).where(Question.id == question_id))).scalar_one_or_none()
+        if not question:
+            error_list.append("Question does not exist.")

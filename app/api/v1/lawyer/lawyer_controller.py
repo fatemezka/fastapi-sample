@@ -41,6 +41,15 @@ class LawyerController:
             raise ErrorHandler.not_found("Lawyer")
         return lawyer
 
+    async def get_by_user_id(self, user_id: int, error_list: list[str] = []):
+        query = select(Lawyer).where(Lawyer.userId == user_id)
+        result = await self.db.execute(query)
+        lawyer = result.scalar_one_or_none()
+        if not lawyer:
+            error_list.append("Lawyer does not exist.")
+            return
+        return lawyer
+
     async def create(self, lawyer_items: ICreateLawyerController):
         async with self.db as async_session:
             new_user = User(

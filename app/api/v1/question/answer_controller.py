@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from app.utils.error_handler import ErrorHandler
 from app.models import Answer
+from app.schemas import ICreateAnswerController
 
 
 class AnswerController:
@@ -14,5 +15,14 @@ class AnswerController:
         answers = result.scalars().all()
         return answers
 
-    async def create(self, answer_items):
-        pass
+    async def create(self, answer_items: ICreateAnswerController):
+        async with self.db as async_session:
+            new_answer = Answer(
+                lawyerId=answer_items["lawyerId"],
+                questionId=answer_items["questionId"],
+                description=answer_items["description"]
+            )
+            async_session.add(new_answer)
+            await async_session.commit()
+            await async_session.refresh(new_answer)
+            return new_answer

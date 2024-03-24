@@ -6,7 +6,8 @@ from typing import Annotated
 from app.dependencies import get_current_user
 from app.api.v1.question.question_controller import QuestionController
 from app.api.v1.question.answer_controller import AnswerController
-from app.schemas import ICreateQuestionBody, ICreateQuestionController, ISecureUser
+from app.api.v1.lawyer.lawyer_controller import LawyerController
+from app.schemas import ICreateQuestionBody, ICreateQuestionController, ISecureUser, ICreateAnswerBody
 
 
 router = APIRouter()
@@ -40,7 +41,7 @@ async def create_question_route(
     return question
 
 
-# # get all questions
+# # get all questions # TODO check isPrivate
 # @router.get("/all")
 # async def get_questions_route(db: AsyncSession = Depends(get_db)):
 #     try:
@@ -108,9 +109,36 @@ async def get_question_categories_route(
 # add answer
 @router.post("/{id}/answer")
 async def create_answer_route(
+    current_user: Annotated[ISecureUser, Depends(get_current_user)],
+    data: ICreateAnswerBody = Body(description="New answer fields"),
     db: AsyncSession = Depends(get_db)
 ):
-    pass
+    if not current_user.isLawyer:
+        raise ErrorHandler.access_denied("Answer the question.")
+
+    error_list = []
+    answer_controller = AnswerController(db)
+    question_controller = QuestionController(db)
+    lawyer_controller = LawyerController(db)
+
+    # check questionId
+    await question_controller.check_question_exists(question_id=data.questionId, error_list=error_list)
+
+    # check lawyer
+    lawyer = await lawyer_controller.get_by_user_id(user_id=current_user.id, error_list=error_list)
+
+    if error_list:
+        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
+
+    answer_items = {
+        "lawyerId": lawyer.id,
+        "questionId": data.questionId,
+        "description": data.description
+    }
+    answer = await answer_controller.create(answer_items=answer_items)
+    await db.close()
+
+    return answer
 
 
 # get question all answers
@@ -120,8 +148,6 @@ async def get_question_answers_route(
         description="Id of question to return its answers."),
     db: AsyncSession = Depends(get_db)
 ):
-    # TODO check question is not private
-
     answer_controller = AnswerController(db)
     answers = await answer_controller.get_all(question_id=question_id)
     return answers
