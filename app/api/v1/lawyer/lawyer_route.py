@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, Body
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.error_handler import ErrorHandler
 from app.db.base import get_db
@@ -65,19 +65,37 @@ async def register_route(
         "cityId": data.cityId,
         "eduDegree": data.eduDegree,
         "studyField": data.studyField,
-        "profilePic": data.profilePic,
+        "profilePic": data.profilePic or None,
         "licenseCode": data.licenseCode,
         "position": data.position,
         "experienceYears": data.experienceYears,
         "biography": data.biography,
-        "officePhoneNumber": data.officePhoneNumber,
-        "officeAddress": data.officeAddress,
+        "officePhoneNumber": data.officePhoneNumber or None,
+        "officeAddress": data.officeAddress or None,
         "specialtyId": data.specialtyId
     }
     lawyer = await lawyer_controller.create(lawyer_items=lawyer_items)
     await db.close()
 
     return lawyer
+
+
+# get all
+@router.get("/all")
+async def get_all_route(
+    province_id: int = Query(
+        default=None, description="ID of the province to retrieve its lawyers."),
+    city_id: int = Query(
+        default=None, description="ID of the city to retrieve its lawyers."),
+    specialty_id: int = Query(
+        default=None, description="ID of the specialty to retrieve its lawyers."),
+    db: AsyncSession = Depends(get_db)
+):
+    lawyer_controller = LawyerController(db)
+    lawyers = await lawyer_controller.get_all(province_id, city_id, specialty_id)
+    await db.close()
+
+    return lawyers
 
 
 # get all specialties

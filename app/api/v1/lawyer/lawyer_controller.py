@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models import Lawyer, User
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from app.utils.error_handler import ErrorHandler
 from app.api.v1.user.user_controller import UserController
 from app.schemas import ICreateLawyerController
@@ -10,8 +11,22 @@ class LawyerController:
     def __init__(self, db: Session):
         self.db = db
 
-    async def get_all(self):  # TODO filters
-        lawyers = (await self.db.execute(select(Lawyer))).scalars().all()
+    async def get_all(self, province_id: int | None = None, city_id: int | None = None, specialty_id: int | None = None):
+        query = select(Lawyer).options(
+            joinedload(Lawyer.user)).options(
+            joinedload(Lawyer.specialty)).options(
+            joinedload(Lawyer.province)).options(
+            joinedload(Lawyer.city))
+
+        if province_id:
+            query = query.filter(Lawyer.provinceId == province_id)
+        if city_id:
+            query = query.filter(Lawyer.cityId == city_id)
+        if specialty_id:
+            query = query.filter(Lawyer.specialtyId == specialty_id)
+
+        result = await self.db.execute(query)
+        lawyers = result.scalars().all()
         return lawyers
 
     async def get_by_id(self, id: int):
