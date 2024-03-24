@@ -37,45 +37,48 @@ You can see error logs in *errors.log* file, which will create as you face an er
 
 ## Endpoints
 
-#### User API
+#### User APIs
 
 ```http
-  POST /user/login
+  POST /token
   POST /user/register
-  GET /user/all
-  GET /user/{id}
+  PUT /user/{user_id}
+  PUT /user/change_password/{user_id}
+  DELETE /user/{user_id}
+  GET /user/me
+  POST /user/logout
 ```
 
-#### Lawer API
+#### Lawer APIs
 
 ```http
   POST /lawyer/register
   GET /lawyer/all
-  GET /lawyer/{id}
+  GET /lawyer/{lawyer_id}
+  GET /lawyer/specialty/all
 ```
 
-#### Question API
+#### Question APIs
 
 ```http
   GET /question/all
-  GET /question/category/all
-  GET /question/{id}/answer/all
-  GET /question/{id}
+  GET /question/{question_id}
   POST /question
-  POST /question/{id}/answer
-  DELETE /question/{id}
+  DELETE /question/{question_id}
+  GET /question/category/all
+  GET /question/{question_id}/answer/all
+  POST /question/{question_id}/answer
 ```
 
-#### Request API
+#### Province & City APIs
 
 ```http
-  GET /request/all
-  GET /request/subject/all
-  GET /request/{id}
-  POST /request
-  DELETE /request/{id}
+  GET /province/all
+  GET /city/all
+  
 ```
 
 ## Some Details
 
-In this project I used FastAPI python framework and SqlAlchemy as ORM to mysql database.
+In this project I used FastAPI python framework and SqlAlchemy as ORM to posgresql database.
+And alembic as database migration.
