@@ -78,3 +78,15 @@ async def register_route(
     await db.close()
 
     return lawyer
+
+
+# get all specialties
+@router.get("/specialty/all")
+async def get_all_specialties_route(
+    db: AsyncSession = Depends(get_db)
+):
+    specialty_controller = SpecialtyController(db)
+    specialties = await specialty_controller.get_all()
+    await db.close()
+
+    return specialties
