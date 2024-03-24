@@ -46,11 +46,17 @@ class QuestionController:
             await async_session.refresh(new_question)
             return new_question
 
-    async def delete(self, id: int):
-        question = self.db.query(Question).filter(Question.id == id).first()
-        self.db.delete(question)
-        self.db.commit()
-        return question
+    async def delete_by_id(self, id: int):
+        question = await self.get_by_id(id=id)
+        if question:
+            # Delete associated answers first
+            await self.db.execute(delete(Answer).where(Answer.questionId == id))
+            # Now delete the question
+            await self.db.execute(delete(Question).where(Question.id == id))
+
+            # await self.db.execute(delete(Question).where(Question.id == id))
+            await self.db.commit()
+        return
 
     # validations
     async def check_category_exists(self, category_id: int, error_list: list[str] = []):

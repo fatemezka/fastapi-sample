@@ -196,7 +196,8 @@ class Question(Base):
     lawyer = relationship('Lawyer', back_populates='questions')
     questionCategory = relationship(
         'QuestionCategory', back_populates='questions')
-    answers = relationship('Answer', back_populates='question')
+    answers = relationship(
+        "Answer", back_populates='question', cascade="all, delete-orphan")
 
 
 class QuestionCategory(Base):

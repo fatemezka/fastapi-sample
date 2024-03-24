@@ -171,4 +171,7 @@ async def logout_route(
     current_user: Annotated[ISecureUser, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db)
 ):
+    # TODO
+    # await remove_redis_token(user=current_user)
+
     return {"message": "Logout successfully"}

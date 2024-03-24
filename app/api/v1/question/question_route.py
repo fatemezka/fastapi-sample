@@ -50,6 +50,8 @@ async def get_all_questions_route(
 ):
     question_controller = QuestionController(db)
     questions = await question_controller.get_all(category_id=category_id, is_private=False)
+    await db.close()
+
     return questions
 
 
@@ -61,16 +63,28 @@ async def get_question_by_id_route(
 ):
     question_controller = QuestionController(db)
     question = await question_controller.get_by_id(id=question_id)
+    await db.close()
+
     return question
 
 
 # delete question
 @router.delete("/{question_id}")
 async def delete_question_by_id_route(
+    current_user: Annotated[ISecureUser, Depends(get_current_user)],
     question_id: int = Path(description="Id of question to delete."),
     db: AsyncSession = Depends(get_db)
 ):
-    pass
+    question_controller = QuestionController(db)
+    question = await question_controller.get_by_id(id=question_id)
+
+    if question.userId != current_user.id:
+        raise ErrorHandler.access_denied("Question")
+
+    await question_controller.delete_by_id(id=question_id)
+    await db.close()
+
+    return {"message": "Question deleted successfully"}
 
 
 # get all categories
@@ -80,6 +94,7 @@ async def get_question_categories_route(
 ):
     question_controller = QuestionController(db)
     categories = await question_controller.get_all_categories()
+    await db.close()
     return categories
 
 
@@ -128,4 +143,6 @@ async def get_question_answers_route(
 ):
     answer_controller = AnswerController(db)
     answers = await answer_controller.get_all(question_id=question_id)
+    await db.close()
+
     return answers
