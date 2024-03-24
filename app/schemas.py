@@ -6,8 +6,8 @@ from enum import Enum
 
 # User
 class ISecureUser(BaseModel):
-    id: int
-    isLawyer: bool
+    id: Optional[int] = None
+    isLawyer: Optional[bool] = None
     username: str
     fullname: str
     phoneNumber: str
