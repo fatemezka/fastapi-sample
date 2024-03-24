@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Body
+from fastapi import APIRouter, Depends, Query, Body, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.error_handler import ErrorHandler
 from app.db.base import get_db
@@ -96,6 +96,19 @@ async def get_all_route(
     await db.close()
 
     return lawyers
+
+
+# get by ID
+@router.get("/{lawyer_id}")
+async def get_by_id_route(
+    lawyer_id: int = Path(description="Id of lawyer to return"),
+    db: AsyncSession = Depends(get_db)
+):
+    lawyer_controller = LawyerController(db)
+    lawyer = await lawyer_controller.get_by_id(id=lawyer_id)
+    await db.close()
+
+    return lawyer
 
 
 # get all specialties

@@ -3,7 +3,6 @@ from app.models import Lawyer, User
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from app.utils.error_handler import ErrorHandler
-from app.api.v1.user.user_controller import UserController
 from app.schemas import ICreateLawyerController
 
 
@@ -13,7 +12,7 @@ class LawyerController:
 
     async def get_all(self, province_id: int | None = None, city_id: int | None = None, specialty_id: int | None = None):
         query = select(Lawyer).options(
-            joinedload(Lawyer.user)).options(
+            joinedload(Lawyer.user).defer(User.hashedPassword).defer(User.isAdmin)).options(
             joinedload(Lawyer.specialty)).options(
             joinedload(Lawyer.province)).options(
             joinedload(Lawyer.city))
@@ -30,13 +29,14 @@ class LawyerController:
         return lawyers
 
     async def get_by_id(self, id: int):
-        lawyer = (await self.db.execute(select(Lawyer).where(Lawyer.id == id))).scalar_one_or_none()
-        if not lawyer:
-            raise ErrorHandler.not_found("Lawyer")
-        return lawyer
+        query = select(Lawyer).options(
+            joinedload(Lawyer.user).defer(User.hashedPassword).defer(User.isAdmin)).options(
+            joinedload(Lawyer.specialty)).options(
+            joinedload(Lawyer.province)).options(
+            joinedload(Lawyer.city)).where(Lawyer.id == id)
 
-    async def get_by_user_id(self, user_id: int):
-        lawyer = (await self.db.execute(select(Lawyer).where(Lawyer.userId == user_id))).scalar_one_or_none()
+        result = await self.db.execute(query)
+        lawyer = result.scalar_one_or_none()
         if not lawyer:
             raise ErrorHandler.not_found("Lawyer")
         return lawyer
