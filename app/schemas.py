@@ -6,6 +6,7 @@ from enum import Enum
 
 # User
 class ISecureUser(BaseModel):
+    id: int
     isLawyer: bool
     username: str
     fullname: str
@@ -42,6 +43,7 @@ class IUpdateUserPasswordBody(BaseModel):
 
 # Lawyer
 class ISecureLawyer(BaseModel):
+    id: int
     gender: Gender
     age: int
     maritalStatus: MaritalStatus
@@ -69,3 +71,17 @@ class ICreateLawyerBody(ISecureLawyer):
 
 class ICreateLawyerController(ISecureLawyer, ICreateUserController):
     pass
+
+
+# Question
+class ICreateQuestionBody(BaseModel):
+    questionCategoryId: int
+    description: str
+    isPrivate: bool
+
+
+class ICreateQuestionController(BaseModel):
+    userId: int
+    questionCategoryId: int
+    description: str
+    isPrivate: bool

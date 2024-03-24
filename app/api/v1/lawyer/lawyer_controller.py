@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Lawyer, User
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -7,7 +7,7 @@ from app.schemas import ICreateLawyerController
 
 
 class LawyerController:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
     async def get_all(self, province_id: int | None = None, city_id: int | None = None, specialty_id: int | None = None):
