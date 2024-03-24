@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, Body
+from fastapi import APIRouter, Depends, Path, Body, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.error_handler import ErrorHandler
 from app.db.base import get_db
@@ -41,17 +41,16 @@ async def create_question_route(
     return question
 
 
-# # get all questions # TODO check isPrivate
-# @router.get("/all")
-# async def get_questions_route(db: AsyncSession = Depends(get_db)):
-#     try:
-#         question_controller = QuestionController(db)
-#         questions = question_controller.get_all()
-#         db.close()
-#     except Exception as e:
-#         ErrorHandler.internal_server_error(e)
-
-#     return questions
+# get all questions
+@router.get("/all")
+async def get_all_questions_route(
+    category_id: int = Query(
+        default=None, description="Id of question category to return its questions."),
+    db: AsyncSession = Depends(get_db)
+):
+    question_controller = QuestionController(db)
+    questions = await question_controller.get_all(category_id=category_id, is_private=False)
+    return questions
 
 
 # # get question by ID

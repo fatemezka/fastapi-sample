@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
+from sqlalchemy.orm import joinedload
 from app.utils.error_handler import ErrorHandler
 from app.models import Question, QuestionCategory, Answer
 from app.schemas import ICreateQuestionController
@@ -9,8 +10,13 @@ class QuestionController:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all(self):
-        questions = (await self.db.execute(select(Question))).scalars().all()
+    async def get_all(self, category_id: int, is_private: bool):
+        query = select(Question).options(joinedload(Question.questionCategory)).filter(
+            Question.isPrivate == is_private)
+        if category_id:
+            query = query.filter(Question.questionCategoryId == category_id)
+        result = await self.db.execute(query)
+        questions = result.scalars().all()
         return questions
 
     def get_by_id(self, id: int):
