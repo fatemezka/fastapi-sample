@@ -27,7 +27,7 @@ async def startup_db():
     await create_all_tables()
 
 
-# Middleware
+# Middlewares
 allowed_origins = [  # TODO read from redis
     "http://localhost:3000",
     "http://localhost:6000"
@@ -50,8 +50,10 @@ app.include_router(user_router, prefix=ROUTE_PREFIX +
                    "/user", tags=["User"])
 # app.include_router(lawyer_router, prefix=ROUTE_PREFIX +
 #                    "/lawyer", tags=["Lawyer"])
-# app.include_router(request_router, prefix=ROUTE_PREFIX + "/request", tags=["Request"])
-# app.include_router(question_router, prefix=ROUTE_PREFIX + "/question", tags=["Question"])
+# app.include_router(request_router, prefix=ROUTE_PREFIX +
+#                    "/request", tags=["Request"])
+# app.include_router(question_router, prefix=ROUTE_PREFIX +
+#                    "/question", tags=["Question"])
 app.include_router(province_router, prefix=ROUTE_PREFIX +
                    "/province", tags=["Province"])
 app.include_router(city_router, prefix=ROUTE_PREFIX +
