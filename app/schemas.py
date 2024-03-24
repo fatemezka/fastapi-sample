@@ -59,9 +59,13 @@ class ISecureLawyer(BaseModel):
     specialtyId: int
 
 
-class ICreateLawyerBody(ICreateUserBody, ISecureLawyer):
-    pass
+class ICreateLawyerBody(ISecureLawyer):
+    username: str
+    fullname: str
+    phoneNumber: str
+    email: str
+    password: str
 
 
-class ICreateLawyerController(ICreateUserController, ISecureLawyer):
+class ICreateLawyerController(ISecureLawyer, ICreateUserController):
     pass

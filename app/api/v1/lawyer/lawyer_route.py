@@ -4,6 +4,7 @@ from app.utils.error_handler import ErrorHandler
 from app.db.base import get_db
 from app.schemas import ICreateLawyerBody
 from app.api.v1.lawyer.lawyer_controller import LawyerController
+from app.api.v1.lawyer.specialty_controller import SpecialtyController
 from app.api.v1.user.user_controller import UserController
 from app.utils.password_operator import get_password_hash
 
@@ -43,11 +44,35 @@ async def register_route(
     # check license_code
     await lawyer_controller.check_license_code_not_exists(license_code=data.licenseCode, error_list=error_list)
 
+    # check specialtyId
+    specialty_controller = SpecialtyController(db)
+    await specialty_controller.check_specialty_exists(id=data.specialtyId, error_list=error_list)
+
     if error_list:
         raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
     lawyer_items = {
-        # TODO
+        "isLawyer": True,
+        "username": data.username,
+        "fullname": data.fullname,
+        "phoneNumber": data.phoneNumber,
+        "email": data.email,
+        "hashedPassword": get_password_hash(data.password),
+        "gender": data.gender,
+        "age": data.age,
+        "maritalStatus": data.maritalStatus,
+        "provinceId": data.provinceId,
+        "cityId": data.cityId,
+        "eduDegree": data.eduDegree,
+        "studyField": data.studyField,
+        "profilePic": data.profilePic,
+        "licenseCode": data.licenseCode,
+        "position": data.position,
+        "experienceYears": data.experienceYears,
+        "biography": data.biography,
+        "officePhoneNumber": data.officePhoneNumber,
+        "officeAddress": data.officeAddress,
+        "specialtyId": data.specialtyId
     }
     lawyer = await lawyer_controller.create(lawyer_items=lawyer_items)
     await db.close()
