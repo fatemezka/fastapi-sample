@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.database import Lawyer, User
+from app.models import Lawyer, User
 from sqlalchemy.exc import SQLAlchemyError
 from app.utils.error_handler import ErrorHandler
 from app.api.v1.user.user_controller import UserController
@@ -25,7 +25,7 @@ class LawyerController:
     def get_by_license_code(self, license_code: str):
         return self.db.query(Lawyer).filter(Lawyer.license_code == license_code).first()
 
-    def create_user_and_lawyer(
+    def create(
         self,
         username: str,
         name: str,

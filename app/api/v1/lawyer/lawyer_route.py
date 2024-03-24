@@ -1,120 +1,64 @@
-from fastapi import APIRouter, Depends, Path
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Path, Body
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.error_handler import ErrorHandler
-from app.utils.token_operator import token_generator
 from app.db.base import get_db
-from app.schemas import IRegisterLawyer, ILogin
+from app.schemas import ICreateLawyerBody
 from app.api.v1.lawyer.lawyer_controller import LawyerController
 from app.api.v1.user.user_controller import UserController
-from app.utils.password_operator import get_password_hash, verify_password, validate_password_pattern
+from app.utils.password_operator import get_password_hash
 
 
 router = APIRouter()
 
 
-@router.get("/all")
-async def get_lawyers_route(db: Session = Depends(get_db)):
-    try:
-        lawyer_controller = LawyerController(db)
-        lawyers = lawyer_controller.get_all()
-        db.close()
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
+# register
+@router.post("/register")
+async def register_route(
+        data: ICreateLawyerBody = Body(description="New lawyer fields"),
+        db: AsyncSession = Depends(get_db)
+):
+    error_list = []
+    lawyer_controller = LawyerController(db)
+    user_controller = UserController(db)
 
-    return lawyers
+    # check username
+    await user_controller.check_username_not_exists(username=data.username, error_list=error_list)
+    user_controller.validate_username_pattern(
+        username=data.username, error_list=error_list)
 
+    # check phoneNumber
+    await user_controller.check_phone_number_not_exists(phone_number=data.phoneNumber, error_list=error_list)
+    user_controller.validate_phone_number_pattern(
+        phone_number=data.phoneNumber, error_list=error_list)
 
-@router.get("/{id}")
-async def get_lawyer_by_id_route(
-        db: Session = Depends(get_db),
-        id: int = Path(description="This is ID of lawyer to return")):
-    try:
-        lawyer_controller = LawyerController(db)
-        lawyer = lawyer_controller.get_by_id(id)
-        db.close()
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
+    # check email
+    await user_controller.check_email_not_exists(email=data.email, error_list=error_list)
+    user_controller.validate_email_pattern(
+        email=data.email, error_list=error_list)
 
-    if not lawyer:
-        ErrorHandler.not_found("Lawyer")
-    return lawyer
+    # check password
+    user_controller.validate_password_pattern(
+        password=data.password, error_list=error_list)
 
+    # check license_code
+    lawyer = lawyer_controller.get_by_license_code(
+        license_code=data.license_code)
+    if lawyer:
+        ErrorHandler.bad_request("This license code does exists!")
+        return
 
-@router.post("/register")  # TODO fix session error
-async def register_lawyer_route(data: IRegisterLawyer, db: Session = Depends(get_db)):
-    try:
-        lawyer_controller = LawyerController(db)
-        user_controller = UserController(db)
+    if error_list:
+        raise ErrorHandler.bad_request(custom_message={"errors": error_list})
 
-        # check phone_number
-        user = user_controller.get_by_phone_number(
-            data.phone_number)  # TODO check phone_number format
-        if user:
-            ErrorHandler.bad_request("Phone number does exist")
-            return
-
-        # check username
-        user = user_controller.get_by_username(data.username)
-        if user:
-            ErrorHandler.bad_request("Username does exist")
-            return
-
-        # check email (if exists)
-        if data.email:
-            user = user_controller.get_by_email(data.email)
-            if user:
-                ErrorHandler.bad_request("Email does exist")
-                return
-
-        # check license_code
-        lawyer = lawyer_controller.get_by_license_code(data.license_code)
-        if lawyer:
-            ErrorHandler.bad_request("This license code does exists!")
-            return
-
-        # hash user's password
-        if not validate_password_pattern(data.password):
-            ErrorHandler.bad_request(
-                "Password pattern is not valid. [at least 8 characters, contain number, contain upper case, contain lower case, contain special character]")
-            return
-
-        hashed_password = get_password_hash(data.password)
-
-        # create user and then lawyer
-        result = lawyer_controller.create_user_and_lawyer(
-            username=data.username,
-            name=data.name,
-            family=data.family,
-            phone_number=data.phone_number,
-            hashed_password=hashed_password,
-            age=data.age,
-            sex=data.sex,
-            province_id=data.province_id,
-            city_id=data.city_id,
-            edu_degree=data.edu_degree,
-            study_field=data.study_field,
-            license_code=data.license_code,
-            position=data.position,
-            experience_years=data.experience_years,
-            biography=data.biography,
-            email=data.email or None,
-            marital_status=data.marital_status or None,
-            profile_photo=data.profile_photo or None,
-            office_phone_number=data.office_phone_number or None,
-            office_address=data.office_address or None
-        )
-        db.close()
-
-        # generate jwt token
-        user = result["user"]
-        lawyer = result["lawyer"]
-        lawyer_token = token_generator(
-            user_id=user.id, lawyer_id=lawyer.id, is_lawyer=True)
-    except Exception as e:
-        ErrorHandler.internal_server_error(e)
-
-    return {
-        "user": user,
-        "lawyer": lawyer,
-        "lawyer_token": lawyer_token
+    lawyer_items = {
+        "isLawyer": False,
+        "username": data.username,
+        "fullname": data.fullname,
+        "phoneNumber": data.phoneNumber,
+        "email": data.email,
+        "hashedPassword": get_password_hash(password=data.password)
     }
+    lawyer = await lawyer_controller.create(lawyer_items=lawyer_items)
+    await db.close()
+
+    return lawyer
