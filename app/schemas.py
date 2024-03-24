@@ -43,7 +43,7 @@ class IUpdateUserPasswordBody(BaseModel):
 
 # Lawyer
 class ISecureLawyer(BaseModel):
-    id: int
+    id: Optional[int] = None
     gender: Gender
     age: int
     maritalStatus: MaritalStatus

@@ -1,46 +1,38 @@
-# from httpx import AsyncClient
-# from app.main import app
-
-# BASE_URL = "http://localhost:8000"
-
-
-# @pytest.mark.asyncio
-# async def test_login_user():
-#     async with AsyncClient(app=app, base_url=BASE_URL) as client:
-#         user = {"username": "fateme", "password": "1234@Fateme"}
-#         response = await client.post("/token", data=user)
-
-#         assert response.status_code == 200
-#         assert "access_token" in response.json()
-
-from fastapi.testclient import TestClient
-from app.main import app
 import pytest
+from app.main import app
+from httpx import AsyncClient
 
-client = TestClient(app)
+BASE_URL = "http://localhost:8000"
+
+test_user = {
+    "username": "farah",
+    "fullname": "farah",
+    "phoneNumber": "+989112534343",
+    "email": "farah@gmail.com",
+    "password": "1234@Farah"
+}
 
 
-# @pytest.mark.asyncio
-def test_token_login():
-    user = {"username": "fateme", "password": "1234@Fateme"}
-    response = client.post("/token", data=user)
+@pytest.mark.asyncio
+async def test_register_user():
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post("/user/register", json=test_user)
 
-    assert response.status_code == 200
-    response = response.json()
-    assert "access_token" in response
-    assert response["token_type"] == "bearer"
+        assert response.status_code == 200
+        response = response.json()
+        assert response["username"] == test_user["username"]
 
 
-def test_register_user():
-    user = {
-        "username": "farah",
-        "fullname": "farah",
-        "phoneNumber": "+989112334343",
-        "email": "farah@gmail.com",
-        "password": "1234@Farah"
-    }
-    response = client.post("/user/register", json=user)
+@pytest.mark.asyncio
+async def test_login_user():
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        login_user = {
+            "username": test_user["username"], "password": test_user["password"]}
+        response = await client.post("/token", data=login_user, follow_redirects=True)
 
-    assert response.status_code == 200
-    response = response.json()
-    assert response["username"] == "farah"
+        # assert response == "SAMPLE TEXT"
+        assert response.status_code == 200
+        response = response.json()
+        assert response == "ff"
+        assert "access_token" in response
+        assert response["token_type"] == "bearer"

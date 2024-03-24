@@ -25,8 +25,10 @@ class CustomMiddleware(BaseHTTPMiddleware):
             return JSONResponse(status_code=e.status_code, content={"message": e.detail})
         except Exception as e:
             logging.error(f"An error occurred at {datetime.now()}: {e}")
+            # return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            #                     content={"message": "Something went wrong in our server!"})
             return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                content={"message": "Something went wrong in our server!"})
+                                content={"ERROR": e})
 
     def log_request(self, request: Request):
         if request.client:
