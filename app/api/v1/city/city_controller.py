@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from app.models import City, Province
 
 
@@ -8,10 +9,5 @@ class CityController:
         self.db = db
 
     async def get_all(self, province_id: int):
-        # cities = (await self.db.execute(select(City).filter(City.provinceId == province_id))).scalars().all()
-        # return cities
-        query = select(City).join(Province).filter(
-            City.provinceId == province_id)
-        result = await self.db.execute(query)
-        cities_with_province = result.scalars().all()
-        return cities_with_province
+        cities = (await self.db.execute(select(City).options(joinedload(City.province)).filter(City.provinceId == province_id))).scalars().all()
+        return cities
