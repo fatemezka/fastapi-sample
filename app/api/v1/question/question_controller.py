@@ -19,15 +19,18 @@ class QuestionController:
         questions = result.scalars().all()
         return questions
 
-    def get_by_id(self, id: int):
-        return self.db.query(Question).filter(Question.id == id).first()
+    async def get_by_id(self, id: int):
+        query = select(Question).options(joinedload(
+            Question.questionCategory)).where(Question.id == id)
+        result = await self.db.execute(query)
+        question = result.scalar_one_or_none()
+        if not question:
+            raise ErrorHandler.not_found("Question")
+        return question
 
     async def get_all_categories(self):
         categories = (await self.db.execute(select(QuestionCategory))).scalars().all()
         return categories
-
-    def get_question_all_answers(self, question_id: int):
-        return self.db.query(Answer).filter(Answer.question_id == question_id).all()
 
     async def create(self, question_items: ICreateQuestionController):
         async with self.db as async_session:

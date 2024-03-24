@@ -53,46 +53,24 @@ async def get_all_questions_route(
     return questions
 
 
-# # get question by ID
-# @router.get("/{id}")
-# async def get_question_by_id_route(
-#         db: AsyncSession = Depends(get_db),
-#         id: int = Path(description="This is ID of question to return")):
-#     try:
-#         question_controller = QuestionController(db)
-#         question = question_controller.get_by_id(id)
-#         db.close()
-#     except Exception as e:
-#         ErrorHandler.internal_server_error(e)
-
-#     if not question:
-#         ErrorHandler.not_found("Question")
-
-#     return question
+# get question by ID
+@router.get("/{question_id}")
+async def get_question_by_id_route(
+    question_id: int = Path(description="Id of question to return."),
+    db: AsyncSession = Depends(get_db)
+):
+    question_controller = QuestionController(db)
+    question = await question_controller.get_by_id(id=question_id)
+    return question
 
 
-# # delete question
-# @router.delete("/{id}")
-# async def delete_question_by_id_route(
-#         request: Request,
-#         db: AsyncSession = Depends(get_db),
-#         id: int = Path(description="This is ID of question to delete")):
-#     try:
-#         user_id = request.user_id
-#         question_controller = QuestionController(db)
-
-#         # check user_id
-#         question = question_controller.get_by_id(id)
-#         if user_id != question.user_id:
-#             ErrorHandler.access_denied("Question")
-#             return
-
-#         question = question_controller.delete(id)
-#         db.close()
-#     except Exception as e:
-#         ErrorHandler.internal_server_error(e)
-
-#     return question
+# delete question
+@router.delete("/{question_id}")
+async def delete_question_by_id_route(
+    question_id: int = Path(description="Id of question to delete."),
+    db: AsyncSession = Depends(get_db)
+):
+    pass
 
 
 # get all categories
@@ -106,9 +84,10 @@ async def get_question_categories_route(
 
 
 # add answer
-@router.post("/{id}/answer")
+@router.post("/{question_id}/answer")
 async def create_answer_route(
     current_user: Annotated[ISecureUser, Depends(get_current_user)],
+    question_id: int = Path(description="Id of question to add an answer."),
     data: ICreateAnswerBody = Body(description="New answer fields"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -121,7 +100,7 @@ async def create_answer_route(
     lawyer_controller = LawyerController(db)
 
     # check questionId
-    await question_controller.check_question_exists(question_id=data.questionId, error_list=error_list)
+    await question_controller.check_question_exists(question_id=question_id, error_list=error_list)
 
     # check lawyer
     lawyer = await lawyer_controller.get_by_user_id(user_id=current_user.id, error_list=error_list)
