@@ -10,4 +10,4 @@ async def test_main():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get("/")
 
-        assert response.status_code == 404
+    assert response.status_code == 404
