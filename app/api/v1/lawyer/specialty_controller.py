@@ -9,11 +9,15 @@ class SpecialtyController:
         self.db = db
 
     async def get_all(self):
-        lawyers = (await self.db.execute(select(Specialty))).scalars().all()
-        return lawyers
+        query = select(Specialty).order_by(Specialty.title.asc())
+        result = await self.db.execute(query)
+        return result.scalars().all()
 
     # validations
     async def check_specialty_exists(self, id: int, error_list: list[str] = []):
-        specialty = (await self.db.execute(select(Specialty).where(Specialty.id == id))).scalar_one_or_none()
+        query = select(Specialty).where(Specialty.id == id)
+        result = await self.db.execute(query)
+        specialty = result.scalar_one_or_none()
+
         if not specialty:
             error_list.append("Specialty not found.")

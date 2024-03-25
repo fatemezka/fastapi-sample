@@ -25,8 +25,7 @@ class LawyerController:
             query = query.filter(Lawyer.specialtyId == specialty_id)
 
         result = await self.db.execute(query)
-        lawyers = result.scalars().all()
-        return lawyers
+        return result.scalars().all()
 
     async def get_by_id(self, id: int):
         query = select(Lawyer).options(
@@ -45,6 +44,7 @@ class LawyerController:
         query = select(Lawyer).where(Lawyer.userId == user_id)
         result = await self.db.execute(query)
         lawyer = result.scalar_one_or_none()
+
         if not lawyer:
             error_list.append("Lawyer does not exist.")
             return
@@ -52,6 +52,7 @@ class LawyerController:
 
     async def create(self, lawyer_items: ICreateLawyerController):
         async with self.db as async_session:
+            # TODO create in one transaction
             new_user = User(
                 isAdmin=False,
                 isLawyer=lawyer_items["isLawyer"],
@@ -65,7 +66,6 @@ class LawyerController:
             await async_session.commit()
             await async_session.refresh(new_user)
 
-            print(new_user)
             new_lawyer = Lawyer(
                 userId=new_user.id,
                 gender=lawyer_items["gender"],
@@ -92,6 +92,9 @@ class LawyerController:
 
     # validations
     async def check_license_code_not_exists(self, license_code: str, error_list: list[str] = []):
-        lawyer = (await self.db.execute(select(Lawyer).where(Lawyer.licenseCode == license_code))).scalar_one_or_none()
+        query = select(Lawyer).where(Lawyer.licenseCode == license_code)
+        result = await self.db.execute(query)
+        lawyer = result.scalar_one_or_none()
+
         if lawyer:
             error_list.append("License code does exist.")
