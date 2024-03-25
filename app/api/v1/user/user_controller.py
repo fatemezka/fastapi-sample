@@ -4,6 +4,7 @@ from app.utils.error_handler import ErrorHandler
 from app.models import User
 from app.schemas import ICreateUserController, IUpdateUserController
 from app.utils.password_operator import verify_password, get_password_hash
+from fastapi import HTTPException
 import re
 import phonenumbers
 
@@ -13,25 +14,37 @@ class UserController:
         self.db = db
 
     async def get_by_id(self, id: int):
-        user = (await self.db.execute(select(User).where(User.id == id))).scalar_one_or_none()
+        query = select(User).where(User.id == id)
+        result = await self.db.execute()
+        user = result.scalar_one_or_none()
+
         if not user:
             raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_username(self, username: str):
-        user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
+        query = select(User).where(User.username == username)
+        result = await self.db.execute()
+        user = result.scalar_one_or_none()
+
         if not user:
             raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_email(self, email: str):
-        user = (await self.db.execute(select(User).where(User.email == email))).scalar_one_or_none()
+        query = select(User).where(User.email == email)
+        result = await self.db.execute()
+        user = result.scalar_one_or_none()
+
         if not user:
             raise ErrorHandler.not_found("User")
         return user
 
     async def get_by_phone_number(self, phone_number: str):
-        user = (await self.db.execute(select(User).where(User.phoneNumber == phone_number))).scalar_one_or_none()
+        query = select(User).where(User.phoneNumber == phone_number)
+        result = await self.db.execute()
+        user = result.scalar_one_or_none()
+
         if not user:
             raise ErrorHandler.not_found("User")
         return user
@@ -56,32 +69,35 @@ class UserController:
         user = await self.get_by_id(id=id)
 
         if user:
-            await self.db.execute(delete(User).where(User.id == id))
+            query = delete(User).where(User.id == id)
+            await self.db.execute(query)
+            # # or
+            # await self.db.delete(user)
             await self.db.commit()
         return
 
     async def update_by_id(self, id: int, user_items: IUpdateUserController):
-        user = (await self.db.execute(select(User).where(User.id == id))).scalar_one_or_none()
-        if user:
-            for key, value in user_items.items():
-                if value:
-                    setattr(user, key, value)
-            await self.db.commit()
+        user = await self.get_by_id(id=id)
+        for key, value in user_items.items():
+            if value:
+                setattr(user, key, value)
+        await self.db.commit()
         return await self.get_by_id(id=id)
 
     async def update_password_by_id(self, id: int, new_password: str):
         user = await self.get_by_id(id=id)
-        if user:
-            setattr(user, "hashedPassword", new_password)
-            await self.db.commit()
-        return await self.get_by_id(id=id)
+        setattr(user, "hashedPassword", new_password)
+        await self.db.commit()
+        return user
 
     # validations
 
     async def check_authentication(self, username: str, password: str, error_list: list[str] = []):
-        user = await self.get_by_username(username=username)
-        if not user:
+        try:
+            user = await self.get_by_username(username=username)
+        except Exception:
             error_list.append("User not found")
+            return
         is_valid_password = verify_password(
             plain_password=password, hashed_password=user.hashedPassword)
         if not is_valid_password:
@@ -162,24 +178,31 @@ class UserController:
             error_list.append("Email is not valid.")
 
     async def check_username_exists(self, username: str, error_list: list[str] = []):
-        user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
-        if not user:
+        try:
+            user = await self.get_by_username(username=username)
+        except Exception:
             error_list.append("User with this username does not exist.")
 
     async def check_username_not_exists(self, username: str, error_list: list[str] = []):
-        user = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
-        if user:
+        try:
+            user = await self.get_by_username(username=username)
             error_list.append("User with this username does exist.")
+        except Exception:
+            return
 
     async def check_phone_number_not_exists(self, phone_number: str, error_list: list[str] = []):
-        user = (await self.db.execute(select(User).where(User.phoneNumber == phone_number))).scalar_one_or_none()
-        if user:
+        try:
+            user = await self.get_by_phone_number(phone_number=phone_number)
             error_list.append("User with this phone number does exist.")
+        except Exception:
+            return
 
     async def check_email_not_exists(self, email: str, error_list: list[str] = []):
-        user = (await self.db.execute(select(User).where(User.email == email))).scalar_one_or_none()
-        if user:
+        try:
+            user = await self.get_by_email(email=email)
             error_list.append("User with this email does exist.")
+        except Exception:
+            return
 
     async def check_username_not_repeat(self, user_id: int, username: str, error_list: list[str] = []):
         existing_username = (await self.db.execute(select(User).where(User.username == username))).scalar_one_or_none()
