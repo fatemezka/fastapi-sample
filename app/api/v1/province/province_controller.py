@@ -8,5 +8,6 @@ class ProvinceController:
         self.db = db
 
     async def get_all(self):
-        provinces = (await self.db.execute(select(Province))).scalars().all()
-        return provinces
+        query = select(Province)
+        result = await self.db.execute(query)
+        return result.scalars().all()

@@ -9,5 +9,7 @@ class CityController:
         self.db = db
 
     async def get_all(self, province_id: int):
-        cities = (await self.db.execute(select(City).options(joinedload(City.province)).filter(City.provinceId == province_id))).scalars().all()
-        return cities
+        query = select(City).options(joinedload(City.province)
+                                     ).filter(City.provinceId == province_id)
+        result = await self.db.execute(query)
+        return result.scalars().all()
