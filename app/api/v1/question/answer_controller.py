@@ -12,8 +12,7 @@ class AnswerController:
     async def get_all(self, question_id: int):
         query = select(Answer).filter(Answer.questionId == question_id)
         result = await self.db.execute(query)
-        answers = result.scalars().all()
-        return answers
+        return result.scalars().all()
 
     async def create(self, answer_items: ICreateAnswerController):
         async with self.db as async_session:

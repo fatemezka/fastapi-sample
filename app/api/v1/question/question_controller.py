@@ -16,21 +16,22 @@ class QuestionController:
         if category_id:
             query = query.filter(Question.questionCategoryId == category_id)
         result = await self.db.execute(query)
-        questions = result.scalars().all()
-        return questions
+        return result.scalars().all()
 
     async def get_by_id(self, id: int):
         query = select(Question).options(joinedload(
             Question.questionCategory)).where(Question.id == id)
         result = await self.db.execute(query)
         question = result.scalar_one_or_none()
+
         if not question:
             raise ErrorHandler.not_found("Question")
         return question
 
     async def get_all_categories(self):
-        categories = (await self.db.execute(select(QuestionCategory))).scalars().all()
-        return categories
+        query = select(QuestionCategory)
+        result = await self.db.execute(query)
+        return result.scalars().all()
 
     async def create(self, question_items: ICreateQuestionController):
         async with self.db as async_session:
@@ -54,17 +55,20 @@ class QuestionController:
             # Now delete the question
             await self.db.execute(delete(Question).where(Question.id == id))
 
-            # await self.db.execute(delete(Question).where(Question.id == id))
             await self.db.commit()
         return
 
     # validations
     async def check_category_exists(self, category_id: int, error_list: list[str] = []):
-        category = (await self.db.execute(select(QuestionCategory).where(QuestionCategory.id == category_id))).scalar_one_or_none()
+        query = select(QuestionCategory).where(
+            QuestionCategory.id == category_id)
+        result = await self.db.execute(query)
+        category = result.scalar_one_or_none()
         if not category:
             error_list.append("Category does not exist.")
 
     async def check_question_exists(self, question_id: int, error_list: list[str] = []):
-        question = (await self.db.execute(select(Question).where(Question.id == question_id))).scalar_one_or_none()
-        if not question:
+        try:
+            question = await self.get_by_id(id=question_id)
+        except Exception:
             error_list.append("Question does not exist.")
